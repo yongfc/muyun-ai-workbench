@@ -5520,6 +5520,8 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
       <input class="set-f" id="setName" maxlength="12">
       <label class="set-lbl">生日（年龄 / 生日倒计时用）</label>
       <input type="date" class="set-f" id="setBday">
+      <label class="set-lbl">☀️ 阳光储备（0~99999，手动补发或调整奖励）</label>
+      <input type="number" class="set-f" id="setCoins" min="0" max="99999" placeholder="当前阳光值">
     </div>
     <div id="spane1" style="display:none">
       <p class="save-tip">改任务名 / 菜品名 / 奖励阳光；取消「启用」= 从菜单隐藏（不丢历史数据）；🗑 删除任务；每组底部可新增。改完点「保存全部设置」。</p>
@@ -5886,7 +5888,7 @@ function resetSet(){['gatePwd','gateP1','gateP2','pwdOld','pwdNew','pwdNew2'].fo
 function unlockSet(){var a=adminHash();if(!a){resetSet();return;}if(hashPwd(document.getElementById('gatePwd').value,a.s)===a.h){setUnlocked=true;resetSet();}else setMsg('gateMsg','密码不正确','err');}
 function setPwdFirst(){var p1=document.getElementById('gateP1').value,p2=document.getElementById('gateP2').value;if(p1.length<4){setMsg('gateMsg2','密码至少 4 位','err');return;}if(p1!==p2){setMsg('gateMsg2','两次输入不一致','err');return;}var salt=Math.random().toString(36).slice(2,10);localStorage.setItem(ADMIN_KEY,JSON.stringify({s:salt,h:hashPwd(p1,salt)}));setUnlocked=true;resetSet();}
 function setTab(i){for(var k=0;k<5;k++){document.getElementById('stab'+k).classList.toggle('on',k===i);document.getElementById('spane'+k).style.display=k===i?'':'none';}}
-function initSetForm(){var cfg=readCfg();document.getElementById('setName').value=cfg.name||'陈牧橒';document.getElementById('setBday').value=cfg.bday||'2016-11-03';var pm=cfg.pomo||[5,10,15,25];for(var i=0;i<4;i++)document.getElementById('setPomo'+i).value=pm[i]!=null?pm[i]:'';var sch=cfg.sched||SCHED_DEFAULT;for(var i=0;i<5;i++){var el=document.getElementById('setSch'+i);if(el)el.value=(sch[i]||[]).join(',');}
+function initSetForm(){var cfg=readCfg();document.getElementById('setName').value=cfg.name||'陈牧橒';document.getElementById('setBday').value=cfg.bday||'2016-11-03';var ce=document.getElementById('setCoins');if(ce)ce.value=(typeof state!=='undefined'&&state&&typeof state.coins==='number')?state.coins:'';var pm=cfg.pomo||[5,10,15,25];for(var i=0;i<4;i++)document.getElementById('setPomo'+i).value=pm[i]!=null?pm[i]:'';var sch=cfg.sched||SCHED_DEFAULT;for(var i=0;i<5;i++){var el=document.getElementById('setSch'+i);if(el)el.value=(sch[i]||[]).join(',');}
  var src=(cfg.tasks&&cfg.tasks.length)?cfg.tasks:TASKS_SNAPSHOT.reduce(function(a,g){return a.concat(g.tasks.map(function(t){return {g:g.key,id:t.id,name:t.name,dish:t.dish,reward:t.reward,meta:t.meta,on:1};}));},[]);
  window.__st=src.map(function(t){return {g:t.g,id:t.id||('c'+Math.random().toString(36).slice(2,8)),name:t.name||'',dish:t.dish||'',reward:+t.reward||0,meta:t.meta||'',on:t.on!==false&&t.on!==0};});renderTaskRows();}
 function renderTaskRows(){var html='';['must','veg','snack'].forEach(function(g){html+='<div class="set-gcard"><div class="set-gh">'+SET_G[g]+'</div>';window.__st.forEach(function(t,i){if(t.g!==g)return;html+='<div class="set-trow"><input class="set-inp" placeholder="任务名" value="'+esc(t.name)+'" oninput="updT('+i+',\'name\',this.value)"><input class="set-inp" placeholder="菜品名" value="'+esc(t.dish)+'" oninput="updT('+i+',\'dish\',this.value)"><input type="number" class="set-num" min="1" max="999" value="'+t.reward+'" oninput="updT('+i+',\'reward\',this.value)"><label class="set-on"><input type="checkbox"'+(t.on?' checked':'')+' onchange="updT('+i+',\'on\',this.checked)">启用</label><button class="set-del" onclick="delTask('+i+')" title="删除该任务">🗑</button></div>';});html+='<button class="set-add" onclick="addTask(\''+g+'\')">＋ 新增任务</button></div>';});document.getElementById('setTasks').innerHTML=html;}
@@ -5895,6 +5897,7 @@ function addTask(g){window.__st.push({g:g,id:'c'+Date.now().toString(36),name:''
 function delTask(i){window.__st.splice(i,1);renderTaskRows();}
 function sched_parse(v,out,i){out[i]=(v||'').split(/[,，、;；]+/).map(function(s){return s.trim();}).filter(function(s){return s;}).slice(0,12);}
 function saveSet(){var cfg={};cfg.name=document.getElementById('setName').value.trim()||'陈牧橒';cfg.bday=document.getElementById('setBday').value||'';
+ var cv=parseInt(document.getElementById('setCoins').value,10);if(!isNaN(cv)&&cv>=0&&cv<=99999)cfg.coins=cv;
  var pm=[];for(var i=0;i<4;i++){var v=parseInt(document.getElementById('setPomo'+i).value,10);if(v>=1&&v<=90)pm.push(v);}if(pm.length)cfg.pomo=pm;
  var tasks=[];(window.__st||[]).forEach(function(t){var n=(t.name||'').trim();if(!n)return;tasks.push({g:t.g,id:t.id,name:n,dish:(t.dish||'').trim()||n,reward:Math.min(999,Math.max(1,parseInt(t.reward,10)||1)),meta:(t.meta||'').trim()||'家长定制',on:!!t.on});});
  if(!tasks.length){setMsg('setMsg','至少保留一个任务','err');return;}cfg.tasks=tasks;
@@ -5909,7 +5912,8 @@ function applyCfg(){var cfg=readCfg();
  if(cfg.tasks&&cfg.tasks.length){var by={};cfg.tasks.forEach(function(t){if(!t.g||!t.id||t.on===false||t.on===0)return;(by[t.g]=by[t.g]||[]).push({id:t.id,name:t.name,dish:t.dish,reward:Math.max(1,parseInt(t.reward,10)||1),meta:t.meta||'家长定制'});});TASK_GROUPS.forEach(function(g){if(by[g.key])g.tasks=by[g.key];});}
  ALL_TASKS=TASK_GROUPS.flatMap(function(g){return g.tasks;});
  if(state&&state.feast)state.feast=state.feast.filter(function(id){return ALL_TASKS.some(function(t){return t.id===id;});});
- if(cfg.pomo&&cfg.pomo.length){var pd=document.getElementById('pomoDur');if(pd)pd.innerHTML=cfg.pomo.map(function(m){return '<button data-min="'+m+'"'+(m===10?' class="sel"':'')+' onclick="setPomoMin('+m+',this)">'+m+'分</button>';}).join('');}if(cfg.sched&&cfg.sched.length===5)SCHED=cfg.sched.map(function(a){return Array.isArray(a)?a:[];});}
+ if(cfg.pomo&&cfg.pomo.length){var pd=document.getElementById('pomoDur');if(pd)pd.innerHTML=cfg.pomo.map(function(m){return '<button data-min="'+m+'"'+(m===10?' class="sel"':'')+' onclick="setPomoMin('+m+',this)">'+m+'分</button>';}).join('');}if(cfg.sched&&cfg.sched.length===5)SCHED=cfg.sched.map(function(a){return Array.isArray(a)?a:[];});
+ if(typeof cfg.coins==='number'&&cfg.coins>=0&&typeof state!=='undefined'&&state&&state.coins!==cfg.coins){state.coins=Math.round(cfg.coins);try{save();}catch(e){}}}
 function tickClock(){const now=new Date();const wd=['周日','周一','周二','周三','周四','周五','周六'][now.getDay()];const de=document.getElementById('dashDate');if(de)de.textContent=String(now.getMonth()+1).padStart(2,'0')+'/'+String(now.getDate()).padStart(2,'0')+' '+wd;document.getElementById('dashClock').textContent=now.toLocaleTimeString('zh-CN',{hour12:false});}
 setInterval(tickClock,1000);tickClock();
 function tick(){let ch=false;var full=0,ps=state.plants||{};for(var id in ps){if(ps[id]&&ps[id].lv>=5)full++;}if(full>0){state.coins+=Math.min(20,full);ch=true;}if(state.activePet){const pd=getPetData(state.activePet);pd.hunger=Math.max(0,pd.hunger-1);pd.happiness=Math.max(0,pd.happiness-1);ch=true;}if(ch){save();renderDash();}}
