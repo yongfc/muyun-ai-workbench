@@ -5160,6 +5160,19 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
 .save-msg.warn{color:#FFD86B;}
 .save-ok{color:#7DFFB2;font-size:13px;margin-left:8px;}
 @media (max-width:520px){.save-chip{font-size:11px;padding:3px 8px;}}
+
+/* ---- 家长设置 ---- */
+.set-inp{flex:2 1 96px;min-width:84px;background:rgba(7,12,32,.85);border:1px solid rgba(45,217,255,.3);border-radius:8px;color:#BFE3FF;font-size:13px;padding:7px 8px;font-family:inherit;}
+.set-num{flex:0 1 66px;min-width:54px;background:rgba(7,12,32,.85);border:1px solid rgba(45,217,255,.3);border-radius:8px;color:#BFE3FF;font-size:13px;padding:7px 6px;font-family:inherit;}
+.set-trow{display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap;}
+.set-gcard{background:rgba(45,217,255,.05);border:1px solid rgba(45,217,255,.2);border-radius:12px;padding:10px;margin-bottom:10px;text-align:left;}
+.set-gh{font-size:13px;color:#7DE3FF;margin-bottom:4px;letter-spacing:1px;}
+.set-add{width:100%;margin-top:6px;background:none;border:1px dashed rgba(45,217,255,.4);color:#7DE3FF;border-radius:8px;padding:6px;cursor:pointer;font-family:inherit;font-size:13px;}
+.set-del{background:rgba(255,138,101,.12);border:1px solid rgba(255,138,101,.4);color:#FFB3A0;border-radius:8px;padding:6px 9px;cursor:pointer;flex:0 0 auto;}
+.set-on{font-size:12px;color:#9FC7E8;display:flex;align-items:center;gap:4px;white-space:nowrap;flex:0 0 auto;}
+.set-f{width:100%;box-sizing:border-box;background:rgba(7,12,32,.85);border:1px solid rgba(45,217,255,.3);border-radius:10px;color:#BFE3FF;font-size:14px;padding:9px 10px;font-family:inherit;margin-top:6px;}
+.set-lbl{display:block;font-size:12px;color:#8FA8C8;text-align:left;margin-top:10px;}
+@media (max-width:520px){.hud-left{flex-wrap:wrap;row-gap:6px;}}
 </style>
 </head>
 <body>
@@ -5170,7 +5183,7 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
 <!-- ============ 首页 · 成长大屏 ============ -->
 <div id="screen-dash">
   <header class="hud-top">
-    <div class="hud-left"><span class="hud-date" id="dashDate">--/-- 周-</span><button class="save-chip" onclick="openSave()" title="导出 / 导入存档（换设备不丢进度）">💾 存档</button></div>
+    <div class="hud-left"><span class="hud-date" id="dashDate">--/-- 周-</span><button class="save-chip" onclick="openSave()" title="导出 / 导入存档（换设备不丢进度）">💾 存档</button><button class="save-chip" onclick="openSet()" title="家长设置：任务 / 奖励 / 时长等参数">⚙️ 设置</button></div>
     <div class="hud-title-wrap">
       <div class="hud-title">陈牧橒 · 未来设计师成长大屏</div>
       <div class="hud-sub">FUTURE DESIGNER HQ <i>◆</i> 小小设计师养成计划</div>
@@ -5368,6 +5381,65 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
   </div>
 </div></div>
 
+<div class="mask" id="setMask"><div class="save-card brk">
+  <button class="view-close" onclick="closeSet()">✕</button>
+  <h2>⚙️ 家长设置</h2>
+  <div id="setGate">
+    <div id="gateLogin">
+      <p class="save-tip">家长管理区：可修改姓名、生日、任务奖励、番茄钟时长等参数。孩子请勿改动哦～</p>
+      <input type="password" class="set-f" id="gatePwd" placeholder="家长密码" onkeydown="if(event.key==='Enter')unlockSet()">
+      <button class="save-btn" onclick="unlockSet()">🔓 解锁设置</button>
+      <span class="save-msg" id="gateMsg"></span>
+    </div>
+    <div id="gateFirst" style="display:none">
+      <p class="save-tip">第一次使用：请设置一个家长密码（至少 4 位），防止孩子误改参数。</p>
+      <input type="password" class="set-f" id="gateP1" placeholder="设置密码（至少 4 位）" onkeydown="if(event.key==='Enter')setPwdFirst()">
+      <input type="password" class="set-f" id="gateP2" placeholder="再输一遍确认" onkeydown="if(event.key==='Enter')setPwdFirst()">
+      <button class="save-btn" onclick="setPwdFirst()">✅ 保存密码并进入</button>
+      <span class="save-msg" id="gateMsg2"></span>
+    </div>
+  </div>
+  <div id="setBody" style="display:none">
+    <div class="save-tabs">
+      <button class="save-tab on" id="stab0" onclick="setTab(0)">👦 基本</button>
+      <button class="save-tab" id="stab1" onclick="setTab(1)">📋 任务</button>
+      <button class="save-tab" id="stab2" onclick="setTab(2)">⏱ 番茄钟</button>
+      <button class="save-tab" id="stab3" onclick="setTab(3)">🔑 密码</button>
+    </div>
+    <div id="spane0">
+      <label class="set-lbl">孩子姓名（大屏标题显示）</label>
+      <input class="set-f" id="setName" maxlength="12">
+      <label class="set-lbl">生日（年龄 / 生日倒计时用）</label>
+      <input type="date" class="set-f" id="setBday">
+    </div>
+    <div id="spane1" style="display:none">
+      <p class="save-tip">改任务名 / 菜品名 / 奖励阳光；取消「启用」= 从菜单隐藏（不丢历史数据）；🗑 删除任务；每组底部可新增。改完点「保存全部设置」。</p>
+      <div id="setTasks"></div>
+    </div>
+    <div id="spane2" style="display:none">
+      <p class="save-tip">番茄钟可选时长（分钟，1~90）。原默认 5 / 10 / 15 / 25。</p>
+      <div class="set-trow">
+        <input type="number" class="set-num" id="setPomo0" min="1" max="90">
+        <input type="number" class="set-num" id="setPomo1" min="1" max="90">
+        <input type="number" class="set-num" id="setPomo2" min="1" max="90">
+        <input type="number" class="set-num" id="setPomo3" min="1" max="90">
+      </div>
+    </div>
+    <div id="spane3" style="display:none">
+      <label class="set-lbl">当前密码</label>
+      <input type="password" class="set-f" id="pwdOld">
+      <label class="set-lbl">新密码（至少 4 位）</label>
+      <input type="password" class="set-f" id="pwdNew">
+      <label class="set-lbl">确认新密码</label>
+      <input type="password" class="set-f" id="pwdNew2">
+      <button class="save-btn" onclick="changePwd()">🔑 修改密码</button>
+      <span class="save-msg" id="pwdMsg"></span>
+    </div>
+    <button class="save-btn" style="margin-top:14px;" onclick="saveSet()">💾 保存全部设置</button>
+    <span class="save-msg" id="setMsg"></span>
+  </div>
+</div></div>
+
 <div class="mask" id="viewMask"><div class="view-card brk">
   <button class="view-close" onclick="closeViewer()">✕</button>
   <div class="view-stage" id="viewStage">
@@ -5410,7 +5482,7 @@ const TASK_GROUPS=[
 {id:'reading2',name:'阅读',dish:'南瓜饼',reward:20,meta:'香甜可口，课外阅读'},
 {id:'teacher',name:'小老师',dish:'千张豆皮',reward:21,meta:'嚼劲十足，讲给爸妈'}]},
 ];
-const ALL_TASKS=TASK_GROUPS.flatMap(g=>g.tasks);
+var ALL_TASKS=TASK_GROUPS.flatMap(g=>g.tasks);var TASKS_SNAPSHOT=TASK_GROUPS.map(function(g){return {key:g.key,tasks:g.tasks.map(function(t){return {id:t.id,name:t.name,dish:t.dish,reward:t.reward,meta:t.meta};})};});
 const POEMS=[
 {id:1,title:'鹿柴',dynasty:'唐',author:'王维',lines:['空山不见人，','但闻人语响。','返景入深林，','复照青苔上。'],note:'「返景」读 fǎn jǐng'},
 {id:2,title:'暮江吟',dynasty:'唐',author:'白居易',lines:['一道残阳铺水中，','半江瑟瑟半江红。','可怜九月初三夜，','露似真珠月似弓。'],note:'瑟瑟=碧绿色'},
@@ -5450,7 +5522,7 @@ const CORE_ATTRS=[
 {key:'实践创新',icon:'💡',desc:'创新思维',tasks:['thinking','teacher']},
 {key:'交流合作',icon:'🤝',desc:'沟通合作',tasks:['zaodu','reading','teacher']},
 {key:'自主学习',icon:'📖',desc:'自我管理',tasks:['zaodu','wandu','reading','oral','homework','reading2','handwriting']}];
-const BIRTHDAY=new Date(2016,10,3);
+var BIRTHDAY=new Date(2016,10,3);
 let state=load();
 function load(){try{const raw=localStorage.getItem(KEY);if(raw){const s=JSON.parse(raw);const today=new Date().toDateString();s.logs=s.logs||[];s.petData=s.petData||{};s.ownedPets=s.ownedPets||[];s.lawn=s.lawn||new Array(15).fill(null);s.poemStats=s.poemStats||{};s.badges=s.badges||[];s.dayLog=s.dayLog||{};s.tasks=s.tasks||{};s.feast=s.feast||[];s.coins=(s.coins==null?100:s.coins);s.streak=s.streak||1;if(s.lastDate===today)return s;s.tasks={};s.feast=[];s.confirmed=false;s.lastDate=today;if(s.lastStreakDate&&Math.round((new Date(today)-new Date(s.lastStreakDate))/86400000)===1)s.streak=(s.streak||1)+1;else s.streak=1;s.lastStreakDate=today;return s;}}catch(e){}return{coins:100,tasks:{},feast:[],logs:[],ownedPets:[],activePet:null,petData:{},lawn:new Array(15).fill(null),selectedSeed:null,lastDate:new Date().toDateString(),confirmed:false,streak:1,lastStreakDate:new Date().toDateString(),poemStats:{},badges:[],dayLog:{}};}
 function save(){localStorage.setItem(KEY,JSON.stringify(state));checkBadges();}
@@ -5602,17 +5674,54 @@ function closeCele(){document.getElementById('celeMask').classList.remove('show'
 function openSave(){document.getElementById('saveCode').value=makeSaveCode();document.getElementById('saveMask').classList.add('show');saveTab('out');}
 function closeSave(){document.getElementById('saveMask').classList.remove('show');var m=document.getElementById('saveMsg');if(m){m.textContent='';m.className='save-msg';}var b=document.getElementById('impBtn');if(b)b.textContent='📥 导入存档';impArm=false;}
 function saveTab(w){document.getElementById('tabOut').classList.toggle('on',w==='out');document.getElementById('tabIn').classList.toggle('on',w==='in');document.getElementById('savePaneOut').style.display=w==='out'?'':'none';document.getElementById('savePaneIn').style.display=w==='in'?'':'none';}
-function makeSaveCode(){var bytes=new TextEncoder().encode(JSON.stringify(state));var bin='';for(var i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);return 'MP1.'+btoa(bin);}
-function parseSaveCode(code){code=(code||'').trim();if(code.indexOf('MP1.')!==0)return null;try{var bin=atob(code.slice(4));var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);var s=JSON.parse(new TextDecoder().decode(bytes));if(s&&typeof s==='object'&&(typeof s.coins==='number'||typeof s.lastDate==='string'))return s;}catch(e){}return null;}
+function makeSaveCode(){var payload={v:2,s:state,c:readCfg()};var bytes=new TextEncoder().encode(JSON.stringify(payload));var bin='';for(var i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);return 'MP2.'+btoa(bin);}
+function parseSaveCode(code){code=(code||'').trim();var v=code.indexOf('MP2.')===0?2:(code.indexOf('MP1.')===0?1:0);if(!v)return null;try{var bin=atob(code.slice(4));var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);var o=JSON.parse(new TextDecoder().decode(bytes));var sv=v===2?(o&&o.s):o,cv=v===2?(o&&o.c):null;if(sv&&typeof sv==='object'&&(typeof sv.coins==='number'||typeof sv.lastDate==='string'))return {s:sv,c:(cv&&typeof cv==='object')?cv:null};}catch(e){}return null;}
 function copySave(){var ta=document.getElementById('saveCode'),okEl=document.getElementById('saveCopyOk');function ok(){okEl.textContent='✓ 已复制';setTimeout(function(){okEl.textContent='';},2000);}function fb(){ta.removeAttribute('readonly');ta.focus();ta.select();var done=false;try{done=document.execCommand('copy');}catch(e){}ta.setAttribute('readonly','');if(done)ok();else{okEl.textContent='请长按/全选手动复制';setTimeout(function(){okEl.textContent='';},3000);}}if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(ok,fb);}else fb();}
 var impArm=false,impTimer=null;
-function doImport(btn){var code=document.getElementById('savePaste').value,msg=document.getElementById('saveMsg');var s=parseSaveCode(code);if(!s){msg.textContent='❌ 存档码无效：请检查是否复制完整（应以 MP1. 开头）';msg.className='save-msg err';impArm=false;btn.textContent='📥 导入存档';return;}if(!impArm){impArm=true;msg.textContent='⚠️ 将覆盖本机当前进度（该存档：阳光 '+s.coins+' · 宠物 '+((s.ownedPets||[]).length)+' 只）。再点一次按钮确认导入';msg.className='save-msg warn';btn.textContent='✅ 确认导入（点这里）';clearTimeout(impTimer);impTimer=setTimeout(function(){impArm=false;btn.textContent='📥 导入存档';},6000);return;}localStorage.setItem(KEY,JSON.stringify(s));msg.textContent='✅ 导入成功！正在刷新页面…';msg.className='save-msg ok';setTimeout(function(){location.reload();},700);}
+function doImport(btn){var code=document.getElementById('savePaste').value,msg=document.getElementById('saveMsg');var r=parseSaveCode(code);if(!r){msg.textContent='❌ 存档码无效：请检查是否复制完整（应以 MP1./MP2. 开头）';msg.className='save-msg err';impArm=false;btn.textContent='📥 导入存档';return;}var s=r.s;if(!impArm){impArm=true;msg.textContent='⚠️ 将覆盖本机当前进度（该存档：阳光 '+s.coins+' · 宠物 '+((s.ownedPets||[]).length)+' 只'+(r.c&&Object.keys(r.c).length?' · 含家长设置':'')+'）。再点一次按钮确认导入';msg.className='save-msg warn';btn.textContent='✅ 确认导入（点这里）';clearTimeout(impTimer);impTimer=setTimeout(function(){impArm=false;btn.textContent='📥 导入存档';},6000);return;}localStorage.setItem(KEY,JSON.stringify(s));if(r.c)try{localStorage.setItem('muyang_cfg_v1',JSON.stringify(r.c));}catch(e){}msg.textContent='✅ 导入成功！正在刷新页面…';msg.className='save-msg ok';setTimeout(function(){location.reload();},700);}
 
+
+/* ---- 家长设置中心 ---- */
+var CFG_KEY='muyang_cfg_v1',ADMIN_KEY='muyang_admin_v1',setUnlocked=false,SET_G={must:'🥢 必点主菜',veg:'🥬 田园素菜',snack:'🍢 特色小食'};
+function readCfg(){try{var c=JSON.parse(localStorage.getItem(CFG_KEY));if(c&&typeof c==='object')return c;}catch(e){}return {};}
+function hashPwd(p,salt){var str=salt+'::'+p,h1=0x811c9dc5,h2=0xc2b2ae35;for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);h1=Math.imul(h1^c,0x01000193)>>>0;h2=Math.imul(h2^c,0x85ebca6b)>>>0;}return h1.toString(16)+'-'+h2.toString(16);}
+function adminHash(){try{var a=JSON.parse(localStorage.getItem(ADMIN_KEY));if(a&&a.h&&a.s)return a;}catch(e){}return null;}
+function setMsg(id,txt,cls){var m=document.getElementById(id);if(m){m.textContent=txt||'';m.className='save-msg '+(cls||'');}}
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function openSet(){document.getElementById('setMask').classList.add('show');resetSet();}
+function closeSet(){document.getElementById('setMask').classList.remove('show');setUnlocked=false;}
+function resetSet(){['gatePwd','gateP1','gateP2','pwdOld','pwdNew','pwdNew2'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});setMsg('gateMsg','');setMsg('gateMsg2','');setMsg('setMsg','');setMsg('pwdMsg','');
+ if(setUnlocked){document.getElementById('setGate').style.display='none';document.getElementById('setBody').style.display='';initSetForm();}
+ else{document.getElementById('setGate').style.display='';document.getElementById('setBody').style.display='none';var has=!!adminHash();document.getElementById('gateLogin').style.display=has?'':'none';document.getElementById('gateFirst').style.display=has?'none':'';}}
+function unlockSet(){var a=adminHash();if(!a){resetSet();return;}if(hashPwd(document.getElementById('gatePwd').value,a.s)===a.h){setUnlocked=true;resetSet();}else setMsg('gateMsg','密码不正确','err');}
+function setPwdFirst(){var p1=document.getElementById('gateP1').value,p2=document.getElementById('gateP2').value;if(p1.length<4){setMsg('gateMsg2','密码至少 4 位','err');return;}if(p1!==p2){setMsg('gateMsg2','两次输入不一致','err');return;}var salt=Math.random().toString(36).slice(2,10);localStorage.setItem(ADMIN_KEY,JSON.stringify({s:salt,h:hashPwd(p1,salt)}));setUnlocked=true;resetSet();}
+function setTab(i){for(var k=0;k<4;k++){document.getElementById('stab'+k).classList.toggle('on',k===i);document.getElementById('spane'+k).style.display=k===i?'':'none';}}
+function initSetForm(){var cfg=readCfg();document.getElementById('setName').value=cfg.name||'陈牧橒';document.getElementById('setBday').value=cfg.bday||'2016-11-03';var pm=cfg.pomo||[5,10,15,25];for(var i=0;i<4;i++)document.getElementById('setPomo'+i).value=pm[i]!=null?pm[i]:'';
+ var src=(cfg.tasks&&cfg.tasks.length)?cfg.tasks:TASKS_SNAPSHOT.reduce(function(a,g){return a.concat(g.tasks.map(function(t){return {g:g.key,id:t.id,name:t.name,dish:t.dish,reward:t.reward,meta:t.meta,on:1};}));},[]);
+ window.__st=src.map(function(t){return {g:t.g,id:t.id||('c'+Math.random().toString(36).slice(2,8)),name:t.name||'',dish:t.dish||'',reward:+t.reward||0,meta:t.meta||'',on:t.on!==false&&t.on!==0};});renderTaskRows();}
+function renderTaskRows(){var html='';['must','veg','snack'].forEach(function(g){html+='<div class="set-gcard"><div class="set-gh">'+SET_G[g]+'</div>';window.__st.forEach(function(t,i){if(t.g!==g)return;html+='<div class="set-trow"><input class="set-inp" placeholder="任务名" value="'+esc(t.name)+'" oninput="updT('+i+',\'name\',this.value)"><input class="set-inp" placeholder="菜品名" value="'+esc(t.dish)+'" oninput="updT('+i+',\'dish\',this.value)"><input type="number" class="set-num" min="1" max="999" value="'+t.reward+'" oninput="updT('+i+',\'reward\',this.value)"><label class="set-on"><input type="checkbox"'+(t.on?' checked':'')+' onchange="updT('+i+',\'on\',this.checked)">启用</label><button class="set-del" onclick="delTask('+i+')" title="删除该任务">🗑</button></div>';});html+='<button class="set-add" onclick="addTask(\''+g+'\')">＋ 新增任务</button></div>';});document.getElementById('setTasks').innerHTML=html;}
+function updT(i,f,v){var t=window.__st[i];if(!t)return;if(f==='reward')t.reward=Math.max(0,parseInt(v,10)||0);else if(f==='on')t.on=!!v;else t[f]=v;}
+function addTask(g){window.__st.push({g:g,id:'c'+Date.now().toString(36),name:'',dish:'',reward:10,meta:'',on:true});renderTaskRows();}
+function delTask(i){window.__st.splice(i,1);renderTaskRows();}
+function saveSet(){var cfg={};cfg.name=document.getElementById('setName').value.trim()||'陈牧橒';cfg.bday=document.getElementById('setBday').value||'';
+ var pm=[];for(var i=0;i<4;i++){var v=parseInt(document.getElementById('setPomo'+i).value,10);if(v>=1&&v<=90)pm.push(v);}if(pm.length)cfg.pomo=pm;
+ var tasks=[];(window.__st||[]).forEach(function(t){var n=(t.name||'').trim();if(!n)return;tasks.push({g:t.g,id:t.id,name:n,dish:(t.dish||'').trim()||n,reward:Math.min(999,Math.max(1,parseInt(t.reward,10)||1)),meta:(t.meta||'').trim()||'家长定制',on:!!t.on});});
+ if(!tasks.length){setMsg('setMsg','至少保留一个任务','err');return;}cfg.tasks=tasks;
+ try{localStorage.setItem(CFG_KEY,JSON.stringify(cfg));}catch(e){setMsg('setMsg','保存失败：'+e.message,'err');return;}
+ setMsg('setMsg','✅ 已保存，正在刷新页面…','ok');setTimeout(function(){location.reload();},700);}
+function changePwd(){var a=adminHash();if(!a||hashPwd(document.getElementById('pwdOld').value,a.s)!==a.h){setMsg('pwdMsg','当前密码不正确','err');return;}var n=document.getElementById('pwdNew').value,n2=document.getElementById('pwdNew2').value;if(n.length<4){setMsg('pwdMsg','新密码至少 4 位','err');return;}if(n!==n2){setMsg('pwdMsg','两次输入的新密码不一致','err');return;}var salt=Math.random().toString(36).slice(2,10);localStorage.setItem(ADMIN_KEY,JSON.stringify({s:salt,h:hashPwd(n,salt)}));setMsg('pwdMsg','✅ 密码已修改','ok');document.getElementById('pwdOld').value='';document.getElementById('pwdNew').value='';document.getElementById('pwdNew2').value='';}
+function applyCfg(){var cfg=readCfg();
+ if(cfg.name){var t=document.querySelector('.hud-title');if(t)t.textContent=cfg.name+' · 未来设计师成长大屏';var n=document.querySelector('.center-name');if(n)n.textContent=cfg.name;}
+ if(cfg.bday&&/^\d{4}-\d{2}-\d{2}$/.test(cfg.bday)){var p=cfg.bday.split('-');BIRTHDAY=new Date(+p[0],+p[1]-1,+p[2]);}
+ if(cfg.tasks&&cfg.tasks.length){var by={};cfg.tasks.forEach(function(t){if(!t.g||!t.id||t.on===false||t.on===0)return;(by[t.g]=by[t.g]||[]).push({id:t.id,name:t.name,dish:t.dish,reward:Math.max(1,parseInt(t.reward,10)||1),meta:t.meta||'家长定制'});});TASK_GROUPS.forEach(function(g){if(by[g.key])g.tasks=by[g.key];});}
+ ALL_TASKS=TASK_GROUPS.flatMap(function(g){return g.tasks;});
+ if(state&&state.feast)state.feast=state.feast.filter(function(id){return ALL_TASKS.some(function(t){return t.id===id;});});
+ if(cfg.pomo&&cfg.pomo.length){var pd=document.getElementById('pomoDur');if(pd)pd.innerHTML=cfg.pomo.map(function(m){return '<button data-min="'+m+'"'+(m===10?' class="sel"':'')+' onclick="setPomoMin('+m+',this)">'+m+'分</button>';}).join('');}}
 function tickClock(){const now=new Date();const wd=['周日','周一','周二','周三','周四','周五','周六'][now.getDay()];const de=document.getElementById('dashDate');if(de)de.textContent=String(now.getMonth()+1).padStart(2,'0')+'/'+String(now.getDate()).padStart(2,'0')+' '+wd;document.getElementById('dashClock').textContent=now.toLocaleTimeString('zh-CN',{hour12:false});}
 setInterval(tickClock,1000);tickClock();
 function tick(){let ch=false;state.lawn.forEach(function(p){if(p&&p.type==='sunflower'){state.coins+=5;ch=true;}});if(state.activePet){const pd=getPetData(state.activePet);pd.hunger=Math.max(0,pd.hunger-1);pd.happiness=Math.max(0,pd.happiness-1);ch=true;}if(ch){save();renderDash();}}
 function renderAll(){renderTasks();renderDash();renderGarden();renderLog();}
-fitBg();tickBg();renderAll();setInterval(tick,30000);init3D();
+applyCfg();fitBg();tickBg();renderAll();setInterval(tick,30000);init3D();
 (function(){const sp=state.pomo;if(!sp)return;const t=ALL_TASKS.find(function(x){return x.id===sp.id;});if(!t){delete state.pomo;save();return;}if(sp.end){const rem=Math.round((sp.end-Date.now())/1000);if(rem>0){openPomodoro(sp.id,sp.total,rem,true);return;}delete state.pomo;save();showToast('🍅 番茄钟在你离开时到时啦！');setTimeout(function(){completeTask(sp.id);},600);return;}if(sp.remain>0)openPomodoro(sp.id,sp.total||600,Math.min(sp.remain,sp.total||600),false);})();
 </script>
 </body>
