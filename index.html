@@ -4803,7 +4803,7 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
 .palette .plabel{font-size:10px;color:#8FA3D9;letter-spacing:2px;white-space:nowrap;margin-right:2px;}
 
 /* 中央指挥台 */
-.center-stage{display:grid;grid-template-columns:auto minmax(132px,1fr);column-gap:14px;align-items:center;justify-content:center;overflow:hidden;}
+.center-stage{display:grid;grid-template-columns:auto auto;column-gap:16px;align-items:center;justify-content:center;overflow:visible;}
 .center-stage>*{min-width:0;}
 .avatar-wrap{position:relative;width:clamp(104px,11.5vw,152px);height:clamp(104px,11.5vw,152px);display:grid;place-items:center;}
 .avatar-ring{position:absolute;inset:-9px;border:2px dashed rgba(45,217,255,.45);border-radius:50%;animation:spin 18s linear infinite;}
@@ -4819,7 +4819,7 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
 .center-name{font-size:clamp(20px,2.6vw,32px);font-weight:900;color:#fff;letter-spacing:6px;margin-top:8px;text-shadow:0 0 22px rgba(45,217,255,.65);}
 .center-badge{margin-top:6px;display:inline-flex;align-items:center;gap:5px;background:rgba(45,217,255,.12);border:1px solid rgba(45,217,255,.45);border-radius:14px;padding:4px 14px;font-size:clamp(11px,1.1vw,13px);font-weight:800;color:#7DE3FF;letter-spacing:2px;box-shadow:0 0 14px rgba(45,217,255,.18);}
 .center-dream{margin-top:5px;font-size:clamp(10px,1vw,12px);color:#8FA3D9;font-style:italic;letter-spacing:1px;}
-.ring-chart{width:clamp(96px,12vw,158px);height:clamp(96px,12vw,158px);margin-top:6px;}
+.ring-chart{width:clamp(104px,13vw,172px);height:clamp(104px,13vw,172px);margin-top:6px;}
 .ring-cap{font-size:10px;color:#8FA3D9;letter-spacing:3px;margin-top:2px;}
 
 /* 快速启动 */
@@ -5035,10 +5035,11 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
 .toast.show{opacity:1;}
 
 /* ===== 中央英雄区（紧凑） ===== */
-.hero-row{display:flex;align-items:center;justify-content:center;}
+.hero-row{display:flex;align-items:center;justify-content:center;margin:0 10px;}
 .hero-row .avatar-wrap{flex:none;}
 .hero-right{display:flex;flex-direction:column;align-items:center;min-width:0;}
-.avatar-wrap.sm{width:clamp(150px,15.5vw,216px);height:clamp(150px,15.5vw,216px);}
+.avatar-wrap.sm{width:clamp(160px,17vw,248px);height:clamp(160px,17vw,248px);}
+.avatar-wrap .panda-wrap{width:90%;height:90%;}
 .hero-info{text-align:center;min-width:0;}
 #dashPanda canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:pan-y;}
 #dashPanda canvas:active{cursor:grabbing;}
@@ -5124,6 +5125,10 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
   .hero-info{text-align:center;}
   .dp-line{white-space:normal;}
   .avatar-wrap.sm{width:116px;height:116px;}
+}
+@media(min-width:901px) and (max-width:1180px){
+  .avatar-wrap.sm{width:clamp(148px,16vw,205px);height:clamp(148px,16vw,205px);}
+  .ring-chart{width:clamp(100px,11.5vw,152px);height:clamp(100px,11.5vw,152px);}
 }
 
 /* ===== 响应式 ===== */
@@ -5263,9 +5268,9 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
   #screen-dash{overflow-y:auto;}
   #screen-dash>*{flex-shrink:0;}
   .dash-main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr;gap:12px;overflow:visible;}
-  .dash-main .dash-col.center-stage{order:-1;grid-column:1/-1;grid-row:1;column-gap:30px;padding:2px 6px 12px;}
-  .dash-main .center-stage .avatar-wrap.sm{width:clamp(160px,26vw,228px);height:clamp(160px,26vw,228px);}
-  .dash-main .center-stage .ring-chart{width:clamp(110px,17vw,156px);height:clamp(110px,17vw,156px);}
+  .dash-main .dash-col.center-stage{order:-1;grid-column:1/-1;grid-row:1;display:grid;grid-template-columns:auto auto;align-items:center;justify-content:center;column-gap:30px;padding:2px 6px 12px;}
+  .dash-main .center-stage .avatar-wrap.sm{width:clamp(185px,30vw,262px);height:clamp(185px,30vw,262px);}
+  .dash-main .center-stage .ring-chart{width:clamp(120px,19vw,172px);height:clamp(120px,19vw,172px);}
   .dash-main .dash-col{display:flex;flex-direction:column;gap:10px;min-height:0;grid-row:2;}
   .dash-main .dash-col>.hud-card{flex:1;min-height:190px;display:flex;flex-direction:column;justify-content:center;}
   .dash-main .dash-col>.hud-card .hud-h{flex:none;}
