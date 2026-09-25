@@ -4803,8 +4803,8 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
 .palette .plabel{font-size:10px;color:#8FA3D9;letter-spacing:2px;white-space:nowrap;margin-right:2px;}
 
 /* 中央指挥台 */
-.center-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
-.center-stage>*{flex-shrink:0;}
+.center-stage{display:grid;grid-template-columns:auto minmax(132px,1fr);column-gap:14px;align-items:center;justify-content:center;overflow:hidden;}
+.center-stage>*{min-width:0;}
 .avatar-wrap{position:relative;width:clamp(104px,11.5vw,152px);height:clamp(104px,11.5vw,152px);display:grid;place-items:center;}
 .avatar-ring{position:absolute;inset:-9px;border:2px dashed rgba(45,217,255,.45);border-radius:50%;animation:spin 18s linear infinite;}
 .avatar-ring::after{content:'';position:absolute;top:-4px;left:50%;width:8px;height:8px;border-radius:50%;background:#FFD54F;box-shadow:0 0 10px #FFD54F;}
@@ -4819,7 +4819,7 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
 .center-name{font-size:clamp(20px,2.6vw,32px);font-weight:900;color:#fff;letter-spacing:6px;margin-top:8px;text-shadow:0 0 22px rgba(45,217,255,.65);}
 .center-badge{margin-top:6px;display:inline-flex;align-items:center;gap:5px;background:rgba(45,217,255,.12);border:1px solid rgba(45,217,255,.45);border-radius:14px;padding:4px 14px;font-size:clamp(11px,1.1vw,13px);font-weight:800;color:#7DE3FF;letter-spacing:2px;box-shadow:0 0 14px rgba(45,217,255,.18);}
 .center-dream{margin-top:5px;font-size:clamp(10px,1vw,12px);color:#8FA3D9;font-style:italic;letter-spacing:1px;}
-.ring-chart{width:clamp(98px,13.5vw,172px);height:clamp(98px,13.5vw,172px);margin-top:8px;}
+.ring-chart{width:clamp(96px,12vw,158px);height:clamp(96px,12vw,158px);margin-top:6px;}
 .ring-cap{font-size:10px;color:#8FA3D9;letter-spacing:3px;margin-top:2px;}
 
 /* 快速启动 */
@@ -5035,9 +5035,11 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
 .toast.show{opacity:1;}
 
 /* ===== 中央英雄区（紧凑） ===== */
-.hero-row{display:flex;align-items:center;gap:14px;justify-content:center;flex-wrap:wrap;}
-.avatar-wrap.sm{width:clamp(88px,9.5vw,118px);height:clamp(88px,9.5vw,118px);}
-.hero-info{text-align:left;min-width:158px;}
+.hero-row{display:flex;align-items:center;justify-content:center;}
+.hero-row .avatar-wrap{flex:none;}
+.hero-right{display:flex;flex-direction:column;align-items:center;min-width:0;}
+.avatar-wrap.sm{width:clamp(150px,15.5vw,216px);height:clamp(150px,15.5vw,216px);}
+.hero-info{text-align:center;min-width:0;}
 #dashPanda canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:pan-y;}
 #dashPanda canvas:active{cursor:grabbing;}
 .emoji-fb{width:100%;height:100%;display:grid;place-items:center;font-size:46px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.5));}
@@ -5121,7 +5123,7 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
 @media(max-width:900px){
   .hero-info{text-align:center;}
   .dp-line{white-space:normal;}
-  .avatar-wrap.sm{width:104px;height:104px;}
+  .avatar-wrap.sm{width:116px;height:116px;}
 }
 
 /* ===== 响应式 ===== */
@@ -5261,11 +5263,9 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
   #screen-dash{overflow-y:auto;}
   #screen-dash>*{flex-shrink:0;}
   .dash-main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr;gap:12px;overflow:visible;}
-  .dash-main .dash-col.center-stage{order:-1;grid-column:1/-1;grid-row:1;display:grid;grid-template-columns:auto auto;column-gap:24px;row-gap:2px;align-content:center;justify-content:space-evenly;overflow:visible;padding:2px 6px 10px;}
-  .dash-main .center-stage .hero-row{grid-row:1/3;grid-column:1;}
-  .dash-main .center-stage .ring-chart{grid-column:2;grid-row:1;justify-self:center;align-self:end;margin:0;width:150px;height:150px;}
-  .dash-main .center-stage .ring-cap{grid-column:2;grid-row:2;justify-self:center;align-self:start;}
-  .dash-main .center-stage .avatar-wrap.sm{width:132px;height:132px;}
+  .dash-main .dash-col.center-stage{order:-1;grid-column:1/-1;grid-row:1;column-gap:30px;padding:2px 6px 12px;}
+  .dash-main .center-stage .avatar-wrap.sm{width:clamp(160px,26vw,228px);height:clamp(160px,26vw,228px);}
+  .dash-main .center-stage .ring-chart{width:clamp(110px,17vw,156px);height:clamp(110px,17vw,156px);}
   .dash-main .dash-col{display:flex;flex-direction:column;gap:10px;min-height:0;grid-row:2;}
   .dash-main .dash-col>.hud-card{flex:1;min-height:190px;display:flex;flex-direction:column;justify-content:center;}
   .dash-main .dash-col>.hud-card .hud-h{flex:none;}
@@ -5320,14 +5320,16 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
           <span class="avatar-3d">3D</span>
           <span class="spark s1">✦</span><span class="spark s2">✦</span><span class="spark s3">✦</span>
         </div>
+      </div>
+      <div class="hero-right">
         <div class="hero-info">
           <div class="center-name">陈牧橒</div>
           <div class="center-badge">✎ 见习设计师 · 四年级</div>
           <div class="center-dream">「 梦想：成为设计师，用创意点亮世界 」</div>
         </div>
+        <div class="ring-chart" id="ringChart"></div>
+        <div class="ring-cap">今日任务达成率</div>
       </div>
-      <div class="ring-chart" id="ringChart"></div>
-      <div class="ring-cap">今日任务达成率</div>
     </div>
 
     <div class="dash-col">
@@ -5764,6 +5766,7 @@ function addGround(sc){var m=new THREE.Mesh(new THREE.CircleGeometry(.62,48),new
 function dragRotate(cv,S){cv.addEventListener('pointerdown',function(e){S.drag=true;S.px=e.clientX;S.moved=0;cv.setPointerCapture(e.pointerId);});cv.addEventListener('pointermove',function(e){if(!S.drag)return;var dx=e.clientX-S.px;S.px=e.clientX;S.moved+=Math.abs(dx);S.ry+=dx*.012;});function up(){S.drag=false;}cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);cv.addEventListener('click',function(e){if(S.moved>8){e.stopPropagation();S.moved=0;}});}
 function dashVisible(){var d=document.getElementById('screen-dash');return !d||d.style.display!=='none';}
 function petPageActive(){var p=document.getElementById('screen-pet');return !!(p&&p.classList.contains('active'));}
+function heroClipIdx(clips){var want=null;try{want=localStorage.getItem('muyang_hero_clip');}catch(e){}if(want){for(var i=0;i<clips.length;i++){if(cleanClipName(clips[i].name)===want)return i;}}return pickClip(clips,'avatar');}
 function initHero(){var mount=document.getElementById('dashPanda');if(!mount||HERO3D)return;if(!T3.ready){mount.innerHTML='<div class="emoji-fb big">🐈</div>';return;}
  var cv=document.createElement('canvas');mount.innerHTML='';mount.appendChild(cv);
  var S={active:true,root:null,mix:null,ry:0,drag:false,px:0,moved:0,cv:cv};
@@ -5772,7 +5775,7 @@ function initHero(){var mount=document.getElementById('dashPanda');if(!mount||HE
  S.cam=new THREE.PerspectiveCamera(30,1,.01,50);S.cam.position.set(.85,.72,1.55);S.cam.lookAt(0,.42,0);
  function fit(){var s=mount.clientWidth||110;S.rend.setSize(s,s,false);}fit();addEventListener('resize',fit);
  dragRotate(cv,S);
- loadModel('avatar',function(rec){if(!rec)return;S.root=rec.root;S.sc.add(rec.root);var i=pickClip(rec.clips,'avatar');if(rec.clips[i]){S.mix=new THREE.AnimationMixer(rec.root);S.mix.clipAction(rec.clips[i]).play();}});
+ loadModel('avatar',function(rec){if(!rec)return;S.root=rec.root;S.sc.add(rec.root);var i=heroClipIdx(rec.clips);if(rec.clips[i]){S.mix=new THREE.AnimationMixer(rec.root);S.mix.clipAction(rec.clips[i]).play();}});
  S.tick=function(dt){if(!dashVisible())return;if(!S.drag)S.ry+=dt*.5;if(S.root)S.root.rotation.y=S.ry;if(S.mix)S.mix.update(dt);S.rend.render(S.sc,S.cam);};
  T3.scenes.push(S);HERO3D=S;}
 function mountPetStage(kind,lv){var mount=document.getElementById('petMount');if(!mount)return;if(!GLB[kind]){mount.innerHTML='<img draggable="false" style="width:100%;height:100%;object-fit:contain;animation:petBob 3.4s ease-in-out infinite;" src="'+(IMG[kind]||'')+'">';return;}if(!T3.ready){mount.innerHTML='<div class="emoji-fb">'+FB_ICON[kind]+'</div>';return;}
@@ -5795,9 +5798,9 @@ function viewerOpen(kind){var mount=document.getElementById('viewMount'),bar=doc
  var S=VIEW3D;S.kind=kind;mount.innerHTML='';mount.appendChild(S.cv);S.rend.setSize(232,232,false);
  if(S.root){S.sc.remove(S.root);S.root=null;}if(S.mix){S.mix.stopAllAction();S.mix=null;}
  S.cam.position.set(1.35,1.05,2.1);S.ctl.target.set(0,.42,0);S.ctl.update();
- loadModel(kind,function(rec){if(!rec||S.kind!==kind)return;S.root=rec.root;S.clips=rec.clips;S.sc.add(rec.root);var i=pickClip(rec.clips,kind);if(rec.clips[i]){S.mix=new THREE.AnimationMixer(rec.root);S.mix.clipAction(rec.clips[i]).play();}
+ loadModel(kind,function(rec){if(!rec||S.kind!==kind)return;S.root=rec.root;S.clips=rec.clips;S.sc.add(rec.root);var i=kind==='avatar'?heroClipIdx(rec.clips):pickClip(rec.clips,kind);if(rec.clips[i]){S.mix=new THREE.AnimationMixer(rec.root);S.mix.clipAction(rec.clips[i]).play();}
   var h='';curatedClips(rec.clips).forEach(function(ci){h+='<button class="va-btn'+(ci===i?' on':'')+'" onclick="viewerPlay('+ci+',this)">'+cleanClipName(rec.clips[ci].name)+'</button>';});bar.innerHTML=h;});}
-function viewerPlay(ci,btn){var S=VIEW3D;if(!S||!S.clips||!S.clips[ci]||!S.mix)return;S.mix.stopAllAction();var a=S.mix.clipAction(S.clips[ci]);a.reset();a.play();document.querySelectorAll('#viewAnims .va-btn').forEach(function(b){b.classList.remove('on');});if(btn)btn.classList.add('on');}
+function viewerPlay(ci,btn){var S=VIEW3D;if(!S||!S.clips||!S.clips[ci]||!S.mix)return;S.mix.stopAllAction();var a=S.mix.clipAction(S.clips[ci]);a.reset();a.play();if(S.kind==='avatar'){try{localStorage.setItem('muyang_hero_clip',cleanClipName(S.clips[ci].name));}catch(e){}if(HERO3D&&HERO3D.mix){HERO3D.mix.stopAllAction();HERO3D.mix.clipAction(S.clips[ci]).play();}}document.querySelectorAll('#viewAnims .va-btn').forEach(function(b){b.classList.remove('on');});if(btn)btn.classList.add('on');}
 function openViewer(kind){VIEWKIND=kind;const isAv=kind==='avatar';document.getElementById('viewName').textContent=isAv?'设计师奶牛猫 · 墨宝':(PET_TYPES.find(function(p){return p.id===kind;})||{}).name||'神秘伙伴';let sub='';if(isAv){sub='✎ 牧橒的灵感守护兽 · 见习设计师伙伴';}else{const pet=PET_TYPES.find(function(p){return p.id===kind;});const owned=state.ownedPets.includes(kind);const r=RARITY[pet.rarity];sub=owned?('Lv.'+getPetData(kind).level+' · '+r.l+' · '+(state.activePet===kind?'正在陪伴你':'我的收藏')):(r.l+' · 领养价 '+pet.cost+' ☀️');if(pet.desc)sub+=' · '+pet.desc;}document.getElementById('viewSub').textContent=sub;document.getElementById('viewCredit').textContent=MYTH_IMG[kind]?'🖼️ 神兽立绘：AI 生成 · Seedream · 仅供家庭使用':((isAv||kind==='cat')?'🧊 3D 模型：Tuxedo Cat Animated 2.0 · DreamNoms · CC-BY · via Sketchfab':'🧊 3D 模型：Quaternius · CC0 公共领域 · via poly.pizza');document.getElementById('viewMask').classList.add('show');viewerOpen(kind);}
 function closeViewer(){document.getElementById('viewMask').classList.remove('show');}
 function genThumbs(cb){if(!T3.ready){cb&&cb();return;}var kinds=Object.keys(GLB),i=0,cv=document.createElement('canvas');cv.width=cv.height=256;var rend=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true});rend.setSize(256,256,false);rend.outputEncoding=THREE.sRGBEncoding;var sc=new THREE.Scene();addLights(sc);var cam=new THREE.PerspectiveCamera(30,1,.01,50);cam.position.set(.95,.8,1.5);cam.lookAt(0,.42,0);(function next(){if(i>=kinds.length){rend.dispose();cb&&cb();return;}var k=kinds[i++];loadModel(k,function(rec){if(rec){sc.add(rec.root);rec.root.rotation.y=-.35;rend.render(sc,cam);IMG[k]=cv.toDataURL('image/png');sc.remove(rec.root);}next();});})();}
@@ -5891,19 +5894,19 @@ var impArm=false,impTimer=null;
 function doImport(btn){var code=document.getElementById('savePaste').value,msg=document.getElementById('saveMsg');var r=parseSaveCode(code);if(!r){msg.textContent='❌ 存档码无效：请检查是否复制完整（应以 MP1./MP2. 开头）';msg.className='save-msg err';impArm=false;btn.textContent='📥 导入存档';return;}var s=r.s;if(!impArm){impArm=true;msg.textContent='⚠️ 将覆盖本机当前进度（该存档：阳光 '+s.coins+' · 宠物 '+((s.ownedPets||[]).length)+' 只'+(r.c&&Object.keys(r.c).length?' · 含家长设置':'')+'）。再点一次按钮确认导入';msg.className='save-msg warn';btn.textContent='✅ 确认导入（点这里）';clearTimeout(impTimer);impTimer=setTimeout(function(){impArm=false;btn.textContent='📥 导入存档';},6000);return;}localStorage.setItem(KEY,JSON.stringify(s));try{state=s;}catch(e){}if(r.c)try{localStorage.setItem('muyang_cfg_v1',JSON.stringify(r.c));}catch(e){}msg.textContent='✅ 导入成功！正在刷新页面…';msg.className='save-msg ok';setTimeout(function(){location.reload();},700);}
 
 /* ---- 云同步（GitHub Contents API：主设备自动备份 / 任意设备拉取） ---- */
-var GH_REPO='yongfc/muyun-ai-workbench',GH_KEY='muyang_gh_v1',GH_PATH='data/sync.json',CLOUD_DEBOUNCE=5*60*1000,ghTimer=null,ghBusy=false,ghLast=null;
+var GH_REPO='yongfc/muyun-ai-workbench',GH_KEY='muyang_gh_v1',GH_PATH='data/sync.json',CLOUD_DEBOUNCE=5*60*1000,ghTimer=null,ghBusy=false,ghLast=null,ghShaCache=null;
 function readGH(){try{var g=JSON.parse(localStorage.getItem(GH_KEY));if(g&&g.t)return g;}catch(e){}return null;}
 function u8b64(str){var b=new TextEncoder().encode(str),s='';for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s);}
 function b64u8(b64){var bin=atob(String(b64).replace(/\s/g,'')),a=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return new TextDecoder().decode(a);}
-function ghApi(path,opt){opt=opt||{};var h={'Accept':'application/vnd.github+json'};if(opt.tok)h['Authorization']='Bearer '+opt.tok;return fetch('https://api.github.com/repos/'+GH_REPO+'/contents/'+path,{method:opt.method||'GET',headers:h,body:opt.body?JSON.stringify(opt.body):undefined}).then(function(r){return r.json().then(function(j){return {status:r.status,json:j};});});}
+function ghApi(path,opt){opt=opt||{};var h={'Accept':'application/vnd.github+json'};if(opt.tok)h['Authorization']='Bearer '+opt.tok;return fetch('https://api.github.com/repos/'+GH_REPO+'/contents/'+path,{method:opt.method||'GET',headers:h,cache:'no-store',body:opt.body?JSON.stringify(opt.body):undefined}).then(function(r){return r.json().then(function(j){return {status:r.status,json:j};});});}
 function cloudGet(cb){ghApi(GH_PATH).then(function(r){if(r.status===404)return cb({none:1});if(r.status!==200)return cb({err:'HTTP '+r.status});try{var o=JSON.parse(b64u8(r.json.content));if(o&&o.s&&typeof o.s==='object')return cb({sha:r.json.sha,ts:o.ts||0,s:o.s,c:o.c||null});}catch(e){}cb({err:'云端数据损坏'});}).catch(function(e){cb({err:'网络连接失败'});});}
-function cloudPut(cb){var g=readGH();if(!g)return cb&&cb({err:'未设置 token'});if(ghBusy)return cb&&cb({busy:1});ghBusy=true;ghApi(GH_PATH).then(function(r){var sha=(r.status===200&&r.json&&r.json.sha)?r.json.sha:null;var payload={v:3,ts:Date.now(),s:state,c:readCfg()};return ghApi(GH_PATH,{method:'PUT',tok:g.t,body:{message:'sync: backup progress '+new Date().toLocaleString('zh-CN'),content:u8b64(JSON.stringify(payload)),sha:sha||undefined}});}).then(function(r){ghBusy=false;if(r.status===401){ghLast={ok:0,txt:'token 已失效，请重新生成并粘贴',ts:Date.now()};return cb&&cb({err:'token 失效（401）：请到 GitHub 重新生成 token 再粘贴'});}if(r.status>=200&&r.status<300){ghLast={ok:1,txt:'备份成功',ts:Date.now()};renderCloudStat();return cb&&cb(null);}cb&&cb({err:'备份失败 HTTP '+r.status});}).catch(function(e){ghBusy=false;cb&&cb({err:'网络连接失败'});});}
+function cloudPut(cb,att){var g=readGH();if(!g)return cb&&cb({err:'未设置 token'});if(ghBusy)return cb&&cb({err:'已有备份正在进行中，请稍候再试',busy:1});ghBusy=true;(ghShaCache?Promise.resolve({status:200,json:{sha:ghShaCache}}):ghApi(GH_PATH)).then(function(r){var sha=(r.status===200&&r.json&&r.json.sha)?r.json.sha:null;var payload={v:3,ts:Date.now(),s:state,c:readCfg()};return ghApi(GH_PATH,{method:'PUT',tok:g.t,body:{message:'sync: backup progress '+new Date().toLocaleString('zh-CN'),content:u8b64(JSON.stringify(payload)),sha:sha||undefined}});}).then(function(pr){if((pr.status===409||pr.status===422)&&(!att||att<3)){ghBusy=false;ghShaCache=null;setTimeout(function(){cloudPut(cb,(att||0)+1);},900+(att||0)*1300);return null;}return pr;}).then(function(r){if(!r)return;ghBusy=false;if(r.status===401){ghLast={ok:0,txt:'token 已失效，请重新生成并粘贴',ts:Date.now()};renderCloudStat();return cb&&cb({err:'token 失效（401）：请到 GitHub 重新生成 token 再粘贴'});}if(r.status>=200&&r.status<300){if(r.json&&r.json.content&&r.json.content.sha)ghShaCache=r.json.content.sha;ghLast={ok:1,txt:'备份成功',ts:Date.now()};renderCloudStat();return cb&&cb(null);}cb&&cb({err:'备份失败 HTTP '+r.status});}).catch(function(e){ghBusy=false;ghShaCache=null;cb&&cb({err:'网络连接失败'});});}
 function schedCloud(){if(!readGH())return;clearTimeout(ghTimer);ghTimer=setTimeout(function(){cloudPut();},CLOUD_DEBOUNCE);}
 function fmtWhen(ts){if(!ts)return '从未';var d=Date.now()-ts;if(d<60000)return '刚刚';if(d<3600000)return Math.floor(d/60000)+' 分钟前';if(d<86400000)return Math.floor(d/3600000)+' 小时前';return new Date(ts).toLocaleDateString('zh-CN')+' '+new Date(ts).toTimeString().slice(0,5);}
 function renderCloudStat(){var el=document.getElementById('cloudStat');if(!el)return;var last=ghLast;var t=last&&last.ts;var txt=last?(last.ok?'✅ 主设备（自动备份已开启）· 上次备份：'+fmtWhen(t):'⚠️ 主设备 · 上次备份：'+last.txt+'（'+fmtWhen(t)+'）'):'✅ 主设备（自动备份已开启）· 还没有备份过';el.innerHTML=txt;}
-function renderCloudPane(){var g=readGH();document.getElementById('cloudNoTok').style.display=g?'none':'';document.getElementById('cloudHasTok').style.display=g?'':'none';if(g)renderCloudStat();}
+function renderCloudPane(){var g=readGH();document.getElementById('cloudNoTok').style.display=g?'none':'';document.getElementById('cloudHasTok').style.display=g?'':'none';if(g){renderCloudStat();if(!ghLast)cloudGet(function(r){if(!r.err&&!r.none&&r.ts){ghLast={ok:1,txt:'备份成功',ts:r.ts};renderCloudStat();}});}}
 function saveGHToken(){var v=(document.getElementById('ghTokIn').value||'').trim();if(v.length<20||!/^(github_pat_|ghp_|gho_)/.test(v)){setMsg('ghTokMsg','❌ token 格式不对：应以 github_pat_ 或 ghp_ 开头','err');return;}localStorage.setItem(GH_KEY,JSON.stringify({t:v}));document.getElementById('ghTokIn').value='';setMsg('ghTokMsg','✅ 已设为主设备！正在测试备份…','ok');renderCloudPane();cloudPut(function(r){if(r)setMsg('ghTokMsg','⚠️ '+r.err,'err');else setMsg('ghTokMsg','✅ 云同步测试成功，备份完成！','ok');});}
-function clearGHToken(){localStorage.removeItem(GH_KEY);ghLast=null;renderCloudPane();}
+function clearGHToken(){localStorage.removeItem(GH_KEY);ghLast=null;ghShaCache=null;renderCloudPane();}
 function doCloudBackup(btn){var old=btn.textContent;btn.textContent='⏳ 备份中…';cloudPut(function(r){btn.textContent=old;if(r)setMsg('cloudMsg','⚠️ '+r.err,'err');else{setMsg('cloudMsg','✅ 已备份到云端（'+new Date().toLocaleTimeString('zh-CN').slice(0,5)+'）','ok');}});}
 var pullArm=false,pullTimer=null;
 function doCloudPull(btn){var msg=document.getElementById('cloudMsg');if(!pullArm){pullArm=true;btn.textContent='⏳ 正在读取云端…';cloudGet(function(r){btn.textContent='📥 从云端拉取进度';if(r&&r.err){pullArm=false;msg.textContent='❌ '+r.err;msg.className='save-msg err';return;}if(r&&r.none){pullArm=false;msg.textContent='云端还没有备份（主设备先备份一次）';msg.className='save-msg warn';return;}var s=r.s,localTs=state._sa||0,cmp=r.ts>localTs?'☁️ 云端较新':'🏠 本机较新（云端是旧备份）';msg.innerHTML='⚠️ 将覆盖本机：云端备份于 <b>'+fmtWhen(r.ts)+'</b>（阳光 '+s.coins+' · 宠物 '+((s.ownedPets||[]).length)+' 只 · 植物 '+Object.keys(s.plants||{}).length+' 种）· '+cmp+'。<br>再点一次按钮确认拉取';msg.className='save-msg warn';btn.textContent='✅ 确认拉取（点这里）';clearTimeout(pullTimer);pullTimer=setTimeout(function(){pullArm=false;btn.textContent='📥 从云端拉取进度';msg.textContent='';},8000);});return;}pullArm=false;btn.textContent='📥 从云端拉取进度';var r2=null;cloudGet(function(r){if(!r||r.err||r.none){msg.textContent=r&&r.err?('❌ '+r.err):'云端备份不存在了';msg.className='save-msg err';return;}localStorage.setItem(KEY,JSON.stringify(r.s));try{state=r.s;}catch(e){}if(r.c)try{localStorage.setItem('muyang_cfg_v1',JSON.stringify(r.c));}catch(e){}msg.textContent='✅ 拉取成功！正在刷新页面…';msg.className='save-msg ok';setTimeout(function(){location.reload();},700);});}
