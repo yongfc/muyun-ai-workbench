@@ -5475,6 +5475,7 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
   <div class="save-tabs">
     <button class="save-tab on" id="tabOut" onclick="saveTab('out')">📤 导出存档</button>
     <button class="save-tab" id="tabIn" onclick="saveTab('in')">📥 导入存档</button>
+    <button class="save-tab" id="tabCloud" onclick="saveTab('cloud')">☁️ 云同步</button>
   </div>
   <div id="savePaneOut">
     <p class="save-tip">把下面的<b>存档码</b>整段复制，发到家里其他设备（微信/QQ 都行）；在那台设备打开工作台 → 💾存档 → 导入存档 → 粘贴，即可恢复全部进度（任务、宠物、阳光、花园、古诗……）。</p>
@@ -5486,6 +5487,23 @@ body{background:radial-gradient(1100px 750px at 72% -8%,rgba(155,123,255,.17),tr
     <textarea id="savePaste" placeholder="在这里粘贴存档码…"></textarea>
     <button class="save-btn" id="impBtn" onclick="doImport(this)">📥 导入存档</button>
     <span class="save-msg" id="saveMsg"></span>
+  </div>
+  <div id="savePaneCloud" style="display:none">
+    <div id="cloudNoTok">
+      <p class="save-tip"><b>云同步</b>：常用设备自动把进度备份到云端仓库，其他设备点一下「从云端拉取」即可恢复，再也不怕清缓存丢档。<br>建议在<b>孩子常用的那台设备</b>上开启（成为主设备）：</p>
+      <p class="save-tip" style="opacity:.85;font-size:11.5px;">① 家长登录 GitHub → 头像 → Settings → Developer settings → Fine-grained tokens → Generate new token<br>② Repository access 只选 <b>yongfc/muyun-ai-workbench</b>，Permissions 里 <b>Contents: Read and write</b>，有效期建议 90 天<br>③ 复制生成的 token（只显示一次），粘贴到下面</p>
+      <input type="password" class="set-f" id="ghTokIn" placeholder="github_pat_ 或 ghp_ 开头的 token" onkeydown="if(event.key==='Enter')saveGHToken()">
+      <button class="save-btn" onclick="saveGHToken()">✅ 保存 token，设为主设备</button>
+      <span class="save-msg" id="ghTokMsg"></span>
+    </div>
+    <div id="cloudHasTok" style="display:none">
+      <p class="save-tip" id="cloudStat">…</p>
+      <button class="save-btn" onclick="doCloudBackup(this)">📤 立即备份到云端</button>
+      <button class="save-btn" style="background:rgba(61,220,151,.15);border-color:rgba(61,220,151,.5);color:#7DEBB2;" onclick="doCloudPull(this)">📥 从云端拉取进度</button>
+      <span class="save-msg" id="cloudMsg"></span>
+      <p class="save-tip" style="font-size:11px;opacity:.7;margin-top:10px;">本机已是主设备：进度变化后约 5 分钟自动静默备份。换电脑/清缓存前也可以手动备份一次。其他设备无需 token，点「从云端拉取」即可。</p>
+      <button class="set-del" style="margin-top:6px;" onclick="clearGHToken(this)" title="解除本机的主设备身份（token 只存在本机浏览器）">解除绑定</button>
+    </div>
   </div>
 </div></div>
 
@@ -5704,7 +5722,7 @@ const CORE_ATTRS=[
 var BIRTHDAY=new Date(2016,10,3);
 let state=load();
 function load(){try{const raw=localStorage.getItem(KEY);if(raw){const s=JSON.parse(raw);const today=new Date().toDateString();s.logs=s.logs||[];s.petData=s.petData||{};s.ownedPets=s.ownedPets||[];s.plants=s.plants||{};s.poemStats=s.poemStats||{};s.badges=s.badges||[];s.dayLog=s.dayLog||{};s.tasks=s.tasks||{};s.feast=s.feast||[];s.coins=(s.coins==null?100:s.coins);s.streak=s.streak||1;if(s.lastDate===today)return s;s.tasks={};s.feast=[];s.confirmed=false;s.lastDate=today;if(s.lastStreakDate&&Math.round((new Date(today)-new Date(s.lastStreakDate))/86400000)===1)s.streak=(s.streak||1)+1;else s.streak=1;s.lastStreakDate=today;return s;}}catch(e){}return{coins:100,tasks:{},feast:[],logs:[],ownedPets:[],activePet:null,petData:{},plants:{},lastDate:new Date().toDateString(),confirmed:false,streak:1,lastStreakDate:new Date().toDateString(),poemStats:{},badges:[],dayLog:{}};}
-function save(){localStorage.setItem(KEY,JSON.stringify(state));checkBadges();}
+function save(){state._sa=Date.now();localStorage.setItem(KEY,JSON.stringify(state));checkBadges();if(typeof readGH==='function')schedCloud();}
 function dkey(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function markToday(){state.dayLog[dkey(new Date())]=1;}
 const BADGES=[
@@ -5864,13 +5882,31 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 function closeCele(){document.getElementById('celeMask').classList.remove('show');}
 /* ---- 存档中心：导出 / 导入 ---- */
 function openSave(){document.getElementById('saveCode').value=makeSaveCode();document.getElementById('saveMask').classList.add('show');saveTab('out');}
-function closeSave(){document.getElementById('saveMask').classList.remove('show');var m=document.getElementById('saveMsg');if(m){m.textContent='';m.className='save-msg';}var b=document.getElementById('impBtn');if(b)b.textContent='📥 导入存档';impArm=false;}
-function saveTab(w){document.getElementById('tabOut').classList.toggle('on',w==='out');document.getElementById('tabIn').classList.toggle('on',w==='in');document.getElementById('savePaneOut').style.display=w==='out'?'':'none';document.getElementById('savePaneIn').style.display=w==='in'?'':'none';}
+function closeSave(){document.getElementById('saveMask').classList.remove('show');var m=document.getElementById('saveMsg');if(m){m.textContent='';m.className='save-msg';}var b=document.getElementById('impBtn');if(b)b.textContent='📥 导入存档';impArm=false;pullArm=false;var cm=document.getElementById('cloudMsg');if(cm){cm.textContent='';cm.className='save-msg';}clearTimeout(pullTimer);}
+function saveTab(w){document.getElementById('tabOut').classList.toggle('on',w==='out');document.getElementById('tabIn').classList.toggle('on',w==='in');document.getElementById('tabCloud').classList.toggle('on',w==='cloud');document.getElementById('savePaneOut').style.display=w==='out'?'':'none';document.getElementById('savePaneIn').style.display=w==='in'?'':'none';document.getElementById('savePaneCloud').style.display=w==='cloud'?'':'none';if(w==='cloud')renderCloudPane();}
 function makeSaveCode(){var payload={v:2,s:state,c:readCfg()};var bytes=new TextEncoder().encode(JSON.stringify(payload));var bin='';for(var i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);return 'MP2.'+btoa(bin);}
 function parseSaveCode(code){code=(code||'').trim();var v=code.indexOf('MP2.')===0?2:(code.indexOf('MP1.')===0?1:0);if(!v)return null;try{var bin=atob(code.slice(4));var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);var o=JSON.parse(new TextDecoder().decode(bytes));var sv=v===2?(o&&o.s):o,cv=v===2?(o&&o.c):null;if(sv&&typeof sv==='object'&&(typeof sv.coins==='number'||typeof sv.lastDate==='string'))return {s:sv,c:(cv&&typeof cv==='object')?cv:null};}catch(e){}return null;}
 function copySave(){var ta=document.getElementById('saveCode'),okEl=document.getElementById('saveCopyOk');function ok(){okEl.textContent='✓ 已复制';setTimeout(function(){okEl.textContent='';},2000);}function fb(){ta.removeAttribute('readonly');ta.focus();ta.select();var done=false;try{done=document.execCommand('copy');}catch(e){}ta.setAttribute('readonly','');if(done)ok();else{okEl.textContent='请长按/全选手动复制';setTimeout(function(){okEl.textContent='';},3000);}}if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(ok,fb);}else fb();}
 var impArm=false,impTimer=null;
-function doImport(btn){var code=document.getElementById('savePaste').value,msg=document.getElementById('saveMsg');var r=parseSaveCode(code);if(!r){msg.textContent='❌ 存档码无效：请检查是否复制完整（应以 MP1./MP2. 开头）';msg.className='save-msg err';impArm=false;btn.textContent='📥 导入存档';return;}var s=r.s;if(!impArm){impArm=true;msg.textContent='⚠️ 将覆盖本机当前进度（该存档：阳光 '+s.coins+' · 宠物 '+((s.ownedPets||[]).length)+' 只'+(r.c&&Object.keys(r.c).length?' · 含家长设置':'')+'）。再点一次按钮确认导入';msg.className='save-msg warn';btn.textContent='✅ 确认导入（点这里）';clearTimeout(impTimer);impTimer=setTimeout(function(){impArm=false;btn.textContent='📥 导入存档';},6000);return;}localStorage.setItem(KEY,JSON.stringify(s));if(r.c)try{localStorage.setItem('muyang_cfg_v1',JSON.stringify(r.c));}catch(e){}msg.textContent='✅ 导入成功！正在刷新页面…';msg.className='save-msg ok';setTimeout(function(){location.reload();},700);}
+function doImport(btn){var code=document.getElementById('savePaste').value,msg=document.getElementById('saveMsg');var r=parseSaveCode(code);if(!r){msg.textContent='❌ 存档码无效：请检查是否复制完整（应以 MP1./MP2. 开头）';msg.className='save-msg err';impArm=false;btn.textContent='📥 导入存档';return;}var s=r.s;if(!impArm){impArm=true;msg.textContent='⚠️ 将覆盖本机当前进度（该存档：阳光 '+s.coins+' · 宠物 '+((s.ownedPets||[]).length)+' 只'+(r.c&&Object.keys(r.c).length?' · 含家长设置':'')+'）。再点一次按钮确认导入';msg.className='save-msg warn';btn.textContent='✅ 确认导入（点这里）';clearTimeout(impTimer);impTimer=setTimeout(function(){impArm=false;btn.textContent='📥 导入存档';},6000);return;}localStorage.setItem(KEY,JSON.stringify(s));try{state=s;}catch(e){}if(r.c)try{localStorage.setItem('muyang_cfg_v1',JSON.stringify(r.c));}catch(e){}msg.textContent='✅ 导入成功！正在刷新页面…';msg.className='save-msg ok';setTimeout(function(){location.reload();},700);}
+
+/* ---- 云同步（GitHub Contents API：主设备自动备份 / 任意设备拉取） ---- */
+var GH_REPO='yongfc/muyun-ai-workbench',GH_KEY='muyang_gh_v1',GH_PATH='data/sync.json',CLOUD_DEBOUNCE=5*60*1000,ghTimer=null,ghBusy=false,ghLast=null;
+function readGH(){try{var g=JSON.parse(localStorage.getItem(GH_KEY));if(g&&g.t)return g;}catch(e){}return null;}
+function u8b64(str){var b=new TextEncoder().encode(str),s='';for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s);}
+function b64u8(b64){var bin=atob(String(b64).replace(/\s/g,'')),a=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return new TextDecoder().decode(a);}
+function ghApi(path,opt){opt=opt||{};var h={'Accept':'application/vnd.github+json'};if(opt.tok)h['Authorization']='Bearer '+opt.tok;return fetch('https://api.github.com/repos/'+GH_REPO+'/contents/'+path,{method:opt.method||'GET',headers:h,body:opt.body?JSON.stringify(opt.body):undefined}).then(function(r){return r.json().then(function(j){return {status:r.status,json:j};});});}
+function cloudGet(cb){ghApi(GH_PATH).then(function(r){if(r.status===404)return cb({none:1});if(r.status!==200)return cb({err:'HTTP '+r.status});try{var o=JSON.parse(b64u8(r.json.content));if(o&&o.s&&typeof o.s==='object')return cb({sha:r.json.sha,ts:o.ts||0,s:o.s,c:o.c||null});}catch(e){}cb({err:'云端数据损坏'});}).catch(function(e){cb({err:'网络连接失败'});});}
+function cloudPut(cb){var g=readGH();if(!g)return cb&&cb({err:'未设置 token'});if(ghBusy)return cb&&cb({busy:1});ghBusy=true;ghApi(GH_PATH).then(function(r){var sha=(r.status===200&&r.json&&r.json.sha)?r.json.sha:null;var payload={v:3,ts:Date.now(),s:state,c:readCfg()};return ghApi(GH_PATH,{method:'PUT',tok:g.t,body:{message:'sync: backup progress '+new Date().toLocaleString('zh-CN'),content:u8b64(JSON.stringify(payload)),sha:sha||undefined}});}).then(function(r){ghBusy=false;if(r.status===401){ghLast={ok:0,txt:'token 已失效，请重新生成并粘贴',ts:Date.now()};return cb&&cb({err:'token 失效（401）：请到 GitHub 重新生成 token 再粘贴'});}if(r.status>=200&&r.status<300){ghLast={ok:1,txt:'备份成功',ts:Date.now()};renderCloudStat();return cb&&cb(null);}cb&&cb({err:'备份失败 HTTP '+r.status});}).catch(function(e){ghBusy=false;cb&&cb({err:'网络连接失败'});});}
+function schedCloud(){if(!readGH())return;clearTimeout(ghTimer);ghTimer=setTimeout(function(){cloudPut();},CLOUD_DEBOUNCE);}
+function fmtWhen(ts){if(!ts)return '从未';var d=Date.now()-ts;if(d<60000)return '刚刚';if(d<3600000)return Math.floor(d/60000)+' 分钟前';if(d<86400000)return Math.floor(d/3600000)+' 小时前';return new Date(ts).toLocaleDateString('zh-CN')+' '+new Date(ts).toTimeString().slice(0,5);}
+function renderCloudStat(){var el=document.getElementById('cloudStat');if(!el)return;var last=ghLast;var t=last&&last.ts;var txt=last?(last.ok?'✅ 主设备（自动备份已开启）· 上次备份：'+fmtWhen(t):'⚠️ 主设备 · 上次备份：'+last.txt+'（'+fmtWhen(t)+'）'):'✅ 主设备（自动备份已开启）· 还没有备份过';el.innerHTML=txt;}
+function renderCloudPane(){var g=readGH();document.getElementById('cloudNoTok').style.display=g?'none':'';document.getElementById('cloudHasTok').style.display=g?'':'none';if(g)renderCloudStat();}
+function saveGHToken(){var v=(document.getElementById('ghTokIn').value||'').trim();if(v.length<20||!/^(github_pat_|ghp_|gho_)/.test(v)){setMsg('ghTokMsg','❌ token 格式不对：应以 github_pat_ 或 ghp_ 开头','err');return;}localStorage.setItem(GH_KEY,JSON.stringify({t:v}));document.getElementById('ghTokIn').value='';setMsg('ghTokMsg','✅ 已设为主设备！正在测试备份…','ok');renderCloudPane();cloudPut(function(r){if(r)setMsg('ghTokMsg','⚠️ '+r.err,'err');else setMsg('ghTokMsg','✅ 云同步测试成功，备份完成！','ok');});}
+function clearGHToken(){localStorage.removeItem(GH_KEY);ghLast=null;renderCloudPane();}
+function doCloudBackup(btn){var old=btn.textContent;btn.textContent='⏳ 备份中…';cloudPut(function(r){btn.textContent=old;if(r)setMsg('cloudMsg','⚠️ '+r.err,'err');else{setMsg('cloudMsg','✅ 已备份到云端（'+new Date().toLocaleTimeString('zh-CN').slice(0,5)+'）','ok');}});}
+var pullArm=false,pullTimer=null;
+function doCloudPull(btn){var msg=document.getElementById('cloudMsg');if(!pullArm){pullArm=true;btn.textContent='⏳ 正在读取云端…';cloudGet(function(r){btn.textContent='📥 从云端拉取进度';if(r&&r.err){pullArm=false;msg.textContent='❌ '+r.err;msg.className='save-msg err';return;}if(r&&r.none){pullArm=false;msg.textContent='云端还没有备份（主设备先备份一次）';msg.className='save-msg warn';return;}var s=r.s,localTs=state._sa||0,cmp=r.ts>localTs?'☁️ 云端较新':'🏠 本机较新（云端是旧备份）';msg.innerHTML='⚠️ 将覆盖本机：云端备份于 <b>'+fmtWhen(r.ts)+'</b>（阳光 '+s.coins+' · 宠物 '+((s.ownedPets||[]).length)+' 只 · 植物 '+Object.keys(s.plants||{}).length+' 种）· '+cmp+'。<br>再点一次按钮确认拉取';msg.className='save-msg warn';btn.textContent='✅ 确认拉取（点这里）';clearTimeout(pullTimer);pullTimer=setTimeout(function(){pullArm=false;btn.textContent='📥 从云端拉取进度';msg.textContent='';},8000);});return;}pullArm=false;btn.textContent='📥 从云端拉取进度';var r2=null;cloudGet(function(r){if(!r||r.err||r.none){msg.textContent=r&&r.err?('❌ '+r.err):'云端备份不存在了';msg.className='save-msg err';return;}localStorage.setItem(KEY,JSON.stringify(r.s));try{state=r.s;}catch(e){}if(r.c)try{localStorage.setItem('muyang_cfg_v1',JSON.stringify(r.c));}catch(e){}msg.textContent='✅ 拉取成功！正在刷新页面…';msg.className='save-msg ok';setTimeout(function(){location.reload();},700);});}
 
 
 /* ---- 家长设置中心 ---- */
