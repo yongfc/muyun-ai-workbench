@@ -28,7 +28,7 @@ button{font-family:inherit;}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:3px;}
 
 /* ============ 首页 · 信息大屏 ============ */
-#screen-dash{width:100%;height:100%;display:flex;flex-direction:column;padding:14px 18px;gap:10px;}
+#screen-dash{width:100%;height:100%;display:flex;flex-direction:column;padding:14px 18px;gap:10px;overflow-y:auto;overflow-x:hidden;}
 .dash-top{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
 .dash-brand{display:flex;align-items:center;gap:12px;}
 .dash-logo{width:clamp(38px,4.5vw,52px);height:clamp(38px,4.5vw,52px);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:clamp(20px,2.6vw,28px);
@@ -44,8 +44,8 @@ button{font-family:inherit;}
 .ticker-clip{flex:1;overflow:hidden;}
 .ticker-in{display:inline-block;white-space:nowrap;padding:6px 0 6px 100%;font-size:12px;color:#ffe9a8;animation:tickMove 22s linear infinite;}
 @keyframes tickMove{to{transform:translateX(-100%);}}
-.dash-main{flex:1;display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:12px;min-height:0;}
-@media(max-width:820px){.dash-main{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;overflow-y:auto;}}
+.dash-main{flex:1 0 auto;display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:12px;align-content:start;}
+@media(max-width:820px){.dash-main{grid-template-columns:1fr;grid-template-rows:auto auto auto;overflow:visible;}}
 .dash-col{display:flex;flex-direction:column;gap:10px;min-height:0;}
 .dash-card{background:var(--card);border:1px solid var(--card-br);border-radius:18px;padding:12px 14px;backdrop-filter:blur(12px);overflow:hidden;position:relative;}
 .dash-card::before{content:'';position:absolute;top:0;left:14px;right:14px;height:2px;border-radius:2px;opacity:.8;}
@@ -508,7 +508,7 @@ button{font-family:inherit;}
   <div id="mainlineBox"></div>
   <div class="dash-main">
     <div class="dash-col">
-      <div class="dash-card glow-cyan" style="flex:1;"><h3>⚡ 能量中枢</h3>
+      <div class="dash-card glow-cyan" style="flex:1 1 auto;"><h3>⚡ 能量中枢</h3>
         <div class="big-num"><span id="dashCoins">0</span><span class="big-unit">阳光</span></div>
         <div class="mini-row">
           <div class="mini-stat"><b id="dashStreak">1天</b><span>🔥 连续打卡</span></div>
@@ -516,7 +516,7 @@ button{font-family:inherit;}
         </div>
         <div class="meter"><i id="dashTaskBar"></i></div>
       </div>
-      <div class="dash-card glow-pink" style="flex:1;"><h3>📖 古诗闯关指挥部</h3>
+      <div class="dash-card glow-pink" style="flex:1 1 auto;"><h3>📖 古诗闯关指挥部</h3>
         <div class="gushi-line"><b id="g2-day">D1</b><span>337晨读 · 艾宾浩斯复习</span></div>
         <div class="meter pink"><i id="g2-bar"></i></div>
         <div class="gushi-sub" id="g2-sub">已掌握 0 / 25 首 · 今日卡组待出发</div>
@@ -544,7 +544,7 @@ button{font-family:inherit;}
         </div>
       </div>
       <div class="dash-card glow-yellow" style="flex:0 0 auto;"><h3>📜 我的军规</h3><div id="rulesBox"></div></div>
-      <div class="dash-card glow-pink" style="flex:1;"><h3>✨ 灵感驿站</h3>
+      <div class="dash-card glow-pink" style="flex:1 1 auto;"><h3>✨ 灵感驿站</h3>
         <div class="muse-poem" id="musePoem">空山不见人，<br>但闻人语响。</div>
         <div class="muse-from" id="museFrom">—— 唐·王维《鹿柴》</div>
         <div class="muse-row">
@@ -846,7 +846,7 @@ function openHomePetPicker(){
 }
 function setHomePet(id){state.homePet=id||'';save();renderDash();ding();closeHomePetPicker();}
 function closeHomePetPicker(){var m=document.getElementById('homePetMask');if(m)m.remove();}
-function goDash(){document.querySelectorAll('.sub-page').forEach(function(p){p.classList.remove('active');});document.getElementById('screen-dash').style.display='flex';renderDash();}
+function goDash(){document.querySelectorAll('.sub-page').forEach(function(p){p.classList.remove('active');});var _sd=document.getElementById('screen-dash');_sd.style.display='flex';_sd.scrollTop=0;renderDash();}
 function goSub(name,fromTasks){document.getElementById('screen-dash').style.display='none';document.querySelectorAll('.sub-page').forEach(function(p){p.classList.remove('active');});document.getElementById('screen-'+name).classList.add('active');if(name==='tasks'&&fromTasks&&!state.confirmed){document.getElementById('confirmMask').classList.add('show');}if(name==='pet')renderPet();if(name==='radar')renderRadar();if(name==='recite')Gushi.mount();if(name==='garden')renderGarden();if(name==='log')renderLog();if(name==='system'&&window.MLSYS)MLSYS.sysRenderTab();}
 let ckState={desk:false,water:false,toilet:false};
 function toggleCk(el){const k=el.dataset.ck;ckState[k]=!ckState[k];el.classList.toggle('checked',ckState[k]);el.querySelector('.box').textContent=ckState[k]?'✓':'';updateConfirmBtn();}
@@ -2667,7 +2667,7 @@ window.addEventListener('load',function(){
 <style>
 /* ============ 牧橒人生系统 · 样式（深色霓虹，与工作台一致） ============ */
 /* 主线罗盘 */
-#mainlineBox{margin:0 0 10px;background:linear-gradient(135deg,rgba(124,77,255,.16),rgba(62,230,255,.08));border:1px solid rgba(167,139,250,.4);border-radius:16px;padding:12px 16px;display:flex;flex-direction:column;gap:9px;}
+#mainlineBox{margin:0 0 10px;flex-shrink:0;background:linear-gradient(135deg,rgba(124,77,255,.16),rgba(62,230,255,.08));border:1px solid rgba(167,139,250,.4);border-radius:16px;padding:12px 16px;display:flex;flex-direction:column;gap:9px;}
 .ml-top{display:flex;flex-direction:column;gap:3px;}
 .ml-label{font-size:10.5px;letter-spacing:.28em;color:#b39ddb;}
 .ml-title{font-size:clamp(17px,2.1vw,23px);font-weight:900;color:#fff;letter-spacing:1px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
