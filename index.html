@@ -124,6 +124,16 @@ button{font-family:inherit;}
 .pet-idle{animation:breathe 2.5s ease-in-out infinite;transform-origin:bottom center;}
 @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 .pet-name-tag{background:rgba(62,230,255,.18);border:1px solid rgba(62,230,255,.45);border-radius:14px;padding:3px 14px;font-size:13px;font-weight:800;display:inline-block;margin-top:5px;}
+/* 萌宠乐园页内真 3D 舞台 */
+.pet3d{position:relative;width:100%;height:min(252px,34vw);min-height:180px;border-radius:16px;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 80%,rgba(129,199,132,.30),rgba(129,212,250,.12) 58%,transparent 78%);
+  border:1px solid rgba(255,255,255,.10);cursor:grab;touch-action:none;}
+.pet3d:active{cursor:grabbing;}
+.pet3d canvas{display:block;width:100%!important;height:100%!important;}
+.pet3d-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9fb8d8;font-size:12px;letter-spacing:3px;}
+.pet3d-tip{position:absolute;right:10px;bottom:7px;font-size:10px;color:rgba(255,255,255,.45);letter-spacing:1px;pointer-events:none;}
+.pet3d-fb{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+.pet3d-fb .pet-glb-icon{width:60%;height:60%;}
 .stats{display:flex;gap:8px;margin:10px 0;}
 .stat{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:8px;text-align:center;}
 .stat .lbl{font-size:10px;color:var(--ink-2);}
@@ -515,7 +525,7 @@ button{font-family:inherit;}
     </div>
     <div class="dash-col center-stage">
       <div class="panda-wrap" id="dashPanda" onclick="open3D('panda','毛毛 · 总局吉祥物')" title="点我 3D 看看"></div>
-      <div class="panda-hint">👆 点我 3D 看看</div>
+      <div class="panda-hint" id="dashPetHint">👆 点我 3D 看看</div>
       <div class="center-name">陈牧橒</div>
       <div class="center-tag">🎯 未来设计师 · 养成中</div>
       <div class="ring-chart" id="ringChart"></div>
@@ -603,6 +613,7 @@ button{font-family:inherit;}
 <div class="sub-page" id="screen-log">
   <div class="sub-top"><button class="back-btn" onclick="goDash()">←</button><div class="sub-title">📝 成长记录</div></div>
   <div class="sub-body"><div id="logList"></div></div>
+</div>
 <div class="sub-page" id="screen-system">
   <div class="sub-top">
     <button class="back-btn" onclick="goDash()">← 返回大屏</button>
@@ -616,7 +627,6 @@ button{font-family:inherit;}
     <button data-tab="patch">升级日志</button>
   </nav>
   <div class="sub-body" id="sysBody"></div>
-</div>
 </div>
 </div>
 
@@ -724,7 +734,7 @@ const CORE_ATTRS=[
 {key:'自主学习',icon:'📖',desc:'自我管理',tasks:['zaodu','wandu','reading','oral','homework','reading2','handwriting']}];
 const BIRTHDAY=new Date(2016,10,3);
 let state=load();
-function load(){try{const raw=localStorage.getItem(KEY);if(raw){const s=JSON.parse(raw);const today=new Date().toDateString();if(s.lastDate===today)return s;s.logs=s.logs||[];s.tasks=s.tasks||{};s.feast=s.feast||[];s.confirmed=false;s.lastDate=today;if(s.lastStreakDate&&Math.round((new Date(today)-new Date(s.lastStreakDate))/86400000)===1)s.streak=(s.streak||1)+1;else s.streak=1;s.lastStreakDate=today;return s;}}catch(e){}return{coins:100,tasks:{},feast:[],logs:[],ownedPets:[],activePet:null,petData:{},lawn:new Array(15).fill(null),selectedSeed:null,lastDate:new Date().toDateString(),confirmed:false,streak:1,lastStreakDate:new Date().toDateString()};}
+function load(){try{const raw=localStorage.getItem(KEY);if(raw){const s=JSON.parse(raw);const today=new Date().toDateString();if(s.lastDate===today)return s;s.logs=s.logs||[];s.tasks=s.tasks||{};s.feast=s.feast||[];s.confirmed=false;s.lastDate=today;if(s.lastStreakDate&&Math.round((new Date(today)-new Date(s.lastStreakDate))/86400000)===1)s.streak=(s.streak||1)+1;else s.streak=1;s.lastStreakDate=today;return s;}}catch(e){}return{coins:100,tasks:{},feast:[],logs:[],ownedPets:[],activePet:null,homePet:'',petData:{},lawn:new Array(15).fill(null),selectedSeed:null,lastDate:new Date().toDateString(),confirmed:false,streak:1,lastStreakDate:new Date().toDateString()};}
 function save(){localStorage.setItem(KEY,JSON.stringify(state));}
 function plantSVG(t){if(t==='sunflower')return'<svg viewBox="0 0 60 70" style="width:100%;height:100%"><rect x="25" y="45" width="10" height="20" fill="#4CAF50" rx="2"/><ellipse cx="30" cy="30" rx="16" ry="16" fill="#FFD54F"/><circle cx="30" cy="30" r="8" fill="#8D6E63"/></svg>';if(t==='wallnut')return'<svg viewBox="0 0 60 70" style="width:100%;height:100%"><ellipse cx="30" cy="40" rx="18" ry="22" fill="#A1887F"/><ellipse cx="30" cy="38" rx="14" ry="18" fill="#8D6E63"/><circle cx="24" cy="35" r="2.5" fill="#2E3D2F"/><circle cx="36" cy="35" r="2.5" fill="#2E3D2F"/></svg>';if(t==='cherry')return'<svg viewBox="0 0 60 70" style="width:100%;height:100%"><circle cx="22" cy="45" r="12" fill="#EF5350"/><circle cx="38" cy="45" r="12" fill="#E53935"/><path d="M30 33 Q30 20 35 15" stroke="#4CAF50" stroke-width="2.5" fill="none"/></svg>';return'';}
 function petSVG(type,level){
@@ -816,6 +826,26 @@ function petSVG(type,level){
 }
 function petIconHTML(type,level){if(window.PET_THUMBS&&PET_THUMBS[type])return '<img class="pet-glb-icon" src="'+PET_THUMBS[type]+'" alt="">';return petSVG(type,level);}
 function pandaBigSVG(){const lv=(typeof state!=='undefined'&&state.petData&&state.petData.panda)?state.petData.panda.level:1;return petIconHTML('panda',lv);}
+/* ===== 首页萌宠自选 ===== */
+function openHomePetPicker(){
+  var old=document.getElementById('homePetMask');if(old)old.remove();
+  var items=[{id:'',name:'默认熊猫'}];
+  state.ownedPets.forEach(function(id){var p=PET_TYPES.find(function(x){return x.id===id;});if(p)items.push(p);});
+  var h='<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">';
+  items.forEach(function(p){
+    var isCur=(p.id===state.homePet)||(!state.homePet&&!p.id);
+    var lv=(p.id&&state.petData[p.id])?state.petData[p.id].level:1;
+    h+='<div onclick="setHomePet(\''+p.id+'\')" title="'+p.name+'" style="width:96px;padding:10px 6px;border-radius:14px;cursor:pointer;text-align:center;background:'+(isCur?'rgba(62,230,255,.18)':'rgba(255,255,255,.06)')+';border:1px solid '+(isCur?'rgba(62,230,255,.65)':'rgba(255,255,255,.12)')+';"><div style="width:64px;height:64px;margin:0 auto 6px;">'+petIconHTML(p.id||'panda',lv)+'</div><div style="font-size:12px;font-weight:800;color:#fff;">'+p.name+'</div><div style="font-size:10px;color:#80DEEA;margin-top:2px;">'+(p.id?('Lv.'+lv+(state.activePet===p.id?' · 陪伴中':'')):'默认')+'</div></div>';
+  });
+  h+='</div>';
+  if(!state.ownedPets.length)h+='<div style="text-align:center;font-size:12px;color:#FFD54F;margin-top:12px;">还没有领养宠物，去萌宠乐园领养一只，就能让它上首页啦！</div>';
+  var mask=document.createElement('div');
+  mask.id='homePetMask';mask.className='mask show';
+  mask.innerHTML='<div class="confirm-card" style="max-width:560px;"><h2>选择首页萌宠</h2><p class="confirm-sub">挑一只陪你上首页的小伙伴</p>'+h+'<button class="confirm-btn" style="margin-top:14px;background:linear-gradient(135deg,#00B8D4,#7C4DFF);" onclick="closeHomePetPicker()">选好了</button></div>';
+  document.body.appendChild(mask);
+}
+function setHomePet(id){state.homePet=id||'';save();renderDash();ding();closeHomePetPicker();}
+function closeHomePetPicker(){var m=document.getElementById('homePetMask');if(m)m.remove();}
 function goDash(){document.querySelectorAll('.sub-page').forEach(function(p){p.classList.remove('active');});document.getElementById('screen-dash').style.display='flex';renderDash();}
 function goSub(name,fromTasks){document.getElementById('screen-dash').style.display='none';document.querySelectorAll('.sub-page').forEach(function(p){p.classList.remove('active');});document.getElementById('screen-'+name).classList.add('active');if(name==='tasks'&&fromTasks&&!state.confirmed){document.getElementById('confirmMask').classList.add('show');}if(name==='pet')renderPet();if(name==='radar')renderRadar();if(name==='recite')Gushi.mount();if(name==='garden')renderGarden();if(name==='log')renderLog();if(name==='system'&&window.MLSYS)MLSYS.sysRenderTab();}
 let ckState={desk:false,water:false,toilet:false};
@@ -1059,7 +1089,7 @@ function renderMuse(){
   const mpt=document.getElementById('musePet');
   if(mpt){
     if(state.activePet){const pet=PET_TYPES.find(x=>x.id===state.activePet);const pd=getPetData(state.activePet);
-      mpt.textContent='🐾 '+pet.name+' · Lv.'+pd.level+' · 🍖'+pd.hunger+' 💖'+pd.happiness;}
+      if(pet)mpt.textContent='🐾 '+pet.name+' · Lv.'+pd.level+' · 🍖'+pd.hunger+' 💖'+pd.happiness;else mpt.textContent='🐾 还没有宠物，去萌宠乐园领养一只吧';}
     else mpt.textContent='🐾 还没有宠物，去萌宠乐园领养一只吧';
   }
 }
@@ -2273,8 +2303,8 @@ var Gushi=(function(){
 
 function getPetData(id){if(!state.petData[id])state.petData[id]={level:1,exp:0,hunger:80,happiness:80};return state.petData[id];}
 function expNeed(lv){return lv*50;}
-function levelUpCheck(id){const pd=state.petData[id];while(pd.exp>=expNeed(pd.level)){pd.exp-=expNeed(pd.level);pd.level++;addLog(PET_TYPES.find(function(p){return p.id===id;}).name+'升到'+pd.level+'级！');pd.hunger=100;pd.happiness=100;fanfare();}}
-function renderPet(){const el=document.getElementById('petHome');if(!state.activePet){el.innerHTML='<div class="empty"><div style="width:100px;height:100px;margin:0 auto 10px;">'+petIconHTML('panda',1)+'</div><div style="font-size:16px;font-weight:800;color:#fff;">欢迎来到萌宠乐园</div><div>完成任务赚阳光，领养小伙伴！</div></div><div style="background:rgba(255,255,255,.06);border-radius:12px;padding:12px;border:1px solid rgba(0,229,255,.2);"><div style="font-size:14px;font-weight:800;margin-bottom:8px;display:flex;justify-content:space-between;"><span style="color:#00E5FF;">宠物商店</span><span style="color:#FFD54F;">'+state.coins+'阳光</span></div><div class="shop-grid">'+shopGrid()+'</div></div>';return;}const pet=PET_TYPES.find(function(p){return p.id===state.activePet;}),pd=getPetData(state.activePet);el.innerHTML='<div class="pet-stage"><div class="pet-display pet-idle" id="petDisplay" style="cursor:pointer" title="点我 3D 看看" onclick="open3D(pet.id,pet.name,pd.level)">'+petIconHTML(pet.id,pd.level)+'</div><div class="pet-name-tag">'+pet.name+' · Lv.'+pd.level+'</div><div style="margin-top:5px;font-size:11px;color:#80DEEA;">'+(pd.hunger<25?'我好饿呀...':'牧橒加油！')+'</div></div><div class="stats"><div class="stat"><div class="lbl">🍖 饱食</div><div class="bar"><div class="fill" style="width:'+pd.hunger+'%;background:#FF9800"></div></div><div class="val">'+Math.round(pd.hunger)+'</div></div><div class="stat"><div class="lbl">💖 心情</div><div class="bar"><div class="fill" style="width:'+pd.happiness+'%;background:#EC407A"></div></div><div class="val">'+Math.round(pd.happiness)+'</div></div><div class="stat"><div class="lbl">⭐ 经验</div><div class="bar"><div class="fill" style="width:'+Math.min(100,pd.exp/expNeed(pd.level)*100)+'%;background:#4CAF50"></div></div><div class="val">'+pd.exp+'/'+expNeed(pd.level)+'</div></div></div><div class="pet-actions"><button class="pbtn btn-feed" onclick="feedPet()">🍖 喂食</button><button class="pbtn btn-play" onclick="playPet()">🎵 玩耍</button></div><div style="background:rgba(255,255,255,.06);border-radius:12px;padding:12px;border:1px solid rgba(0,229,255,.2);"><div style="font-size:14px;font-weight:800;margin-bottom:8px;color:#00E5FF;">我的宠物 ('+state.ownedPets.length+'只)</div><div class="shop-grid">'+shopGrid()+'</div></div>';}
+function levelUpCheck(id){const pd=state.petData[id];if(!pd)return;const _lp=PET_TYPES.find(function(p){return p.id===id;});while(pd.exp>=expNeed(pd.level)){pd.exp-=expNeed(pd.level);pd.level++;addLog((_lp?_lp.name:'宠物')+'升到'+pd.level+'级！');pd.hunger=100;pd.happiness=100;fanfare();}}
+function renderPet(){const el=document.getElementById('petHome');const _ap=PET_TYPES.find(function(p){return p.id===state.activePet;});if(!_ap){el.innerHTML='<div class="empty"><div style="width:100px;height:100px;margin:0 auto 10px;">'+petIconHTML('panda',1)+'</div><div style="font-size:16px;font-weight:800;color:#fff;">欢迎来到萌宠乐园</div><div>完成任务赚阳光，领养小伙伴！</div></div><div style="background:rgba(255,255,255,.06);border-radius:12px;padding:12px;border:1px solid rgba(0,229,255,.2);"><div style="font-size:14px;font-weight:800;margin-bottom:8px;display:flex;justify-content:space-between;"><span style="color:#00E5FF;">宠物商店</span><span style="color:#FFD54F;">'+state.coins+'阳光</span></div><div class="shop-grid">'+shopGrid()+'</div></div>';return;}const pet=PET_TYPES.find(function(p){return p.id===state.activePet;}),pd=getPetData(state.activePet);el.innerHTML='<div class="pet-stage"><div class="pet3d" id="petMount3d" title="点我 3D 看看"></div><div class="pet-name-tag">'+pet.name+' · Lv.'+pd.level+'</div><div style="margin-top:5px;font-size:11px;color:#80DEEA;">'+(pd.hunger<25?'我好饿呀...':'牧橒加油！')+'</div></div><div class="stats"><div class="stat"><div class="lbl">🍖 饱食</div><div class="bar"><div class="fill" style="width:'+pd.hunger+'%;background:#FF9800"></div></div><div class="val">'+Math.round(pd.hunger)+'</div></div><div class="stat"><div class="lbl">💖 心情</div><div class="bar"><div class="fill" style="width:'+pd.happiness+'%;background:#EC407A"></div></div><div class="val">'+Math.round(pd.happiness)+'</div></div><div class="stat"><div class="lbl">⭐ 经验</div><div class="bar"><div class="fill" style="width:'+Math.min(100,pd.exp/expNeed(pd.level)*100)+'%;background:#4CAF50"></div></div><div class="val">'+pd.exp+'/'+expNeed(pd.level)+'</div></div></div><div class="pet-actions"><button class="pbtn btn-feed" onclick="feedPet()">🍖 喂食</button><button class="pbtn btn-play" onclick="playPet()">🎵 玩耍</button></div><div style="background:rgba(255,255,255,.06);border-radius:12px;padding:12px;border:1px solid rgba(0,229,255,.2);"><div style="font-size:14px;font-weight:800;margin-bottom:8px;color:#00E5FF;">我的宠物 ('+state.ownedPets.length+'只)</div><div class="shop-grid">'+shopGrid()+'</div></div>';setTimeout(function(){mountPetStage3D(pet.id,pd.level);},0);}
 function shopGrid(){return PET_TYPES.map(function(p){const owned=state.ownedPets.includes(p.id),active=state.activePet===p.id,r=RARITY[p.rarity],lv=owned?getPetData(p.id).level:1;return'<div class="shop-item '+(owned?'owned':'')+' '+(!owned&&state.coins<p.cost?'locked':'')+'" onclick="onShop(\''+p.id+'\')"><div class="shop-icon">'+petIconHTML(p.id,lv)+'</div><div class="shop-name">'+p.name+'</div><span class="rarity '+r.c+'">'+r.l+'</span><div class="shop-cost">'+(owned?(active?'陪伴中':'切换'):p.cost+'阳光')+'</div></div>';}).join('');}
 function onShop(pid){const pet=PET_TYPES.find(function(p){return p.id===pid;});if(state.ownedPets.includes(pid)){state.activePet=pid;showToast(pet.name+'来陪你啦！');}else{if(state.coins<pet.cost){showToast('还差'+(pet.cost-state.coins)+'阳光！');return;}state.coins-=pet.cost;state.ownedPets.push(pid);getPetData(pid);state.activePet=pid;showToast('恭喜领养'+pet.name+'！');fanfare();}save();renderAll();renderPet();}
 function feedPet(){if(!state.activePet||state.coins<10)return;state.coins-=10;const pd=getPetData(state.activePet);pd.hunger=Math.min(100,pd.hunger+25);pd.exp+=5;levelUpCheck(state.activePet);ding();save();renderAll();renderPet();}
@@ -2286,7 +2316,7 @@ function addLog(text){const now=new Date();const time=String(now.getMonth()+1).p
 function renderLog(){const el=document.getElementById('logList');el.innerHTML=state.logs.length?state.logs.map(function(l){return'<div class="log-item"><span class="log-time">'+l.time+'</span><span>'+l.text+'</span></div>';}).join(''):'<div class="empty">还没有记录</div>';}
 function calcAge(){const now=new Date();let y=now.getFullYear()-BIRTHDAY.getFullYear(),m=now.getMonth()-BIRTHDAY.getMonth(),d=now.getDate()-BIRTHDAY.getDate();if(d<0){m--;d+=new Date(now.getFullYear(),now.getMonth(),0).getDate();}if(m<0){y--;m+=12;}return{years:y,months:m,days:d,totalDays:Math.floor((now-BIRTHDAY)/86400000)};}
 function calcBday(){const now=new Date();let n=new Date(now.getFullYear(),BIRTHDAY.getMonth(),BIRTHDAY.getDate());if(n<now)n=new Date(now.getFullYear()+1,BIRTHDAY.getMonth(),BIRTHDAY.getDate());return Math.ceil((n-now)/86400000);}
-function renderDash(){document.getElementById('dashPanda').innerHTML=pandaBigSVG();const age=calcAge();document.getElementById('dashAge').textContent=age.years+'岁';document.getElementById('dashAgeDetail').textContent=age.months+'个月'+age.days+'天 · 成长'+age.totalDays.toLocaleString()+'天';document.getElementById('dashCoins').textContent=state.coins;const done=ALL_TASKS.filter(function(x){return state.tasks[x.id];}).length;document.getElementById('dashDone').textContent=done+'/'+ALL_TASKS.length;document.getElementById('dashStreak').textContent=(state.streak||1)+'天';document.getElementById('dashPet').textContent=state.activePet?PET_TYPES.find(function(p){return p.id===state.activePet;}).name:'待领养';const cd=calcBday();document.getElementById('dashBday').textContent=cd+'天';renderRing(done/ALL_TASKS.length*100);const tb=document.getElementById('dashTaskBar');if(tb)tb.style.width=(done/ALL_TASKS.length*100)+'%';renderGushiDash();renderTicker();renderMuse();}
+function renderDash(){const _hp=PET_TYPES.find(function(p){return p.id===state.homePet;}),_ho=!!(_hp&&state.ownedPets.indexOf(_hp.id)>=0),_hl=_ho?getPetData(_hp.id).level:1;document.getElementById('dashPanda').innerHTML=_ho?petIconHTML(_hp.id,_hl):pandaBigSVG();document.getElementById('dashPanda').onclick=function(){if(_ho)open3D(_hp.id,_hp.name,_hl);else open3D('panda','毛毛 · 总局吉祥物',1);};const _dh=document.getElementById('dashPetHint');if(_dh)_dh.innerHTML='👆 点我 3D 看看'+(state.ownedPets.length?' · <b style="cursor:pointer;text-decoration:underline;" onclick="openHomePetPicker()">🔄 换宠（'+(_ho?_hp.name:'默认熊猫')+'）</b>':'');const age=calcAge();document.getElementById('dashAge').textContent=age.years+'岁';document.getElementById('dashAgeDetail').textContent=age.months+'个月'+age.days+'天 · 成长'+age.totalDays.toLocaleString()+'天';document.getElementById('dashCoins').textContent=state.coins;const done=ALL_TASKS.filter(function(x){return state.tasks[x.id];}).length;document.getElementById('dashDone').textContent=done+'/'+ALL_TASKS.length;document.getElementById('dashStreak').textContent=(state.streak||1)+'天';document.getElementById('dashPet').textContent=(function(){var _d=PET_TYPES.find(function(p){return p.id===state.activePet;});return _d?_d.name:'待领养';})();const cd=calcBday();document.getElementById('dashBday').textContent=cd+'天';renderRing(done/ALL_TASKS.length*100);const tb=document.getElementById('dashTaskBar');if(tb)tb.style.width=(done/ALL_TASKS.length*100)+'%';renderGushiDash();renderTicker();renderMuse();}
 let ringChart=null;
 function renderRing(pct){const el=document.getElementById('ringChart');if(!el||typeof echarts==='undefined')return;if(!ringChart)ringChart=echarts.init(el);ringChart.setOption({series:[{type:'pie',radius:['70%','85%'],silent:true,label:{show:false},data:[{value:pct,itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#00E5FF'},{offset:1,color:'#7C4DFF'}]}}},{value:100-pct,itemStyle:{color:'rgba(255,255,255,.1)'}}]},{type:'pie',radius:['0','60%'],silent:true,label:{show:true,position:'center',formatter:pct.toFixed(0)+'%',fontSize:18,fontWeight:900,color:'#FFD54F'},data:[{value:1,itemStyle:{color:'rgba(0,229,255,.1)'}}]}]});}
 let radarChart=null;
@@ -2435,6 +2465,65 @@ open3DThree=function(type,level){
     })();
   });
 };
+/* ===== 萌宠乐园：页内真 3D 舞台（复用 GLB 缓存，等价旧版 mountPetStage） ===== */
+var PET3D=null;
+function petPageActive(){var p=document.getElementById('screen-pet');return !!(p&&p.classList.contains('active'));}
+function mountPetStage3D(type,level){
+  var mount=document.getElementById('petMount3d');
+  if(!mount)return;
+  function fb(){mount.innerHTML='<div class="pet3d-fb">'+petIconHTML(type,level)+'</div>';}
+  if(!glbOK()||!PET_GLB_B64[type]){fb();return;}
+  if(!PET3D){
+    var cv=document.createElement('canvas');
+    var S={cv:cv,rend:null,sc:null,cam:null,root:null,mix:null,ry:0.6,rx:0,drag:false,px:0,py:0,moved:0,type:null,lv:1,raf:null,last:0};
+    try{S.rend=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});}catch(e){fb();return;}
+    S.rend.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+    S.sc=new THREE.Scene();
+    S.sc.add(new THREE.HemisphereLight(0xffffff,0x5a4a8a,1.25));
+    var k=new THREE.DirectionalLight(0xffffff,0.85);k.position.set(3,5,4);S.sc.add(k);
+    var rm=new THREE.DirectionalLight(0x7ac8ff,0.5);rm.position.set(-4,3,-4);S.sc.add(rm);
+    S.cam=new THREE.PerspectiveCamera(33,1,0.1,60);
+    S.cam.position.set(0,-0.3,6.5);S.cam.lookAt(0,-0.8,0);
+    S.tick=function(dt){
+      if(!petPageActive()||!cv.isConnected)return;
+      if(!S.drag)S.ry+=dt*0.45;
+      if(S.root){S.root.rotation.y=S.ry;S.root.rotation.x=S.rx;}
+      if(S.mix)S.mix.update(dt);
+      S.rend.render(S.sc,S.cam);
+    };
+    PET3D=S;
+    (function loop(){requestAnimationFrame(loop);var now=performance.now(),dt=Math.min(.05,(now-(PET3D.last||now))/1000);PET3D.last=now;try{PET3D.tick(dt);}catch(e){}})();
+  }
+  var S=PET3D;
+  mount.innerHTML='<div class="pet3d-load">✨ 模型召唤中…</div><div class="pet3d-tip">拖动旋转 · 点我看全屏</div>';
+  mount.appendChild(S.cv);
+  var w=mount.clientWidth||300,h=mount.clientHeight||220;
+  S.rend.setSize(w,h,false);
+  S.cam.aspect=Math.max(w/h,0.2);S.cam.updateProjectionMatrix();
+  if(S.root){S.sc.remove(S.root);S.root=null;}
+  if(S.mix){try{S.mix.stopAllAction();}catch(e){}S.mix=null;}
+  S.type=type;S.lv=level||1;S.ry=0.6;S.rx=0;
+  S.cv.onpointerdown=function(e){S.drag=true;S.px=e.clientX;S.py=e.clientY;S.moved=0;try{S.cv.setPointerCapture(e.pointerId);}catch(err){}};
+  S.cv.onpointermove=function(e){if(!S.drag)return;var dx=e.clientX-S.px,dy=e.clientY-S.py;S.px=e.clientX;S.py=e.clientY;S.moved+=Math.abs(dx)+Math.abs(dy);S.ry+=dx*0.01;S.rx=Math.max(-0.5,Math.min(0.5,S.rx+dy*0.006));};
+  S.cv.onpointerup=function(e){S.drag=false;try{S.cv.releasePointerCapture(e.pointerId);}catch(err){}if(S.moved<6){var pt=PET_TYPES.find(function(p){return p.id===type;});if(pt)open3D(type,pt.name,level);}};
+  S.cv.onpointercancel=function(){S.drag=false;};
+  loadPetGLB(type,function(root){
+    if(!root||S.type!==type||!mount.isConnected)return;
+    var ld=mount.querySelector('.pet3d-load');if(ld)ld.remove();
+    var model=clonePet(root);
+    var group=new THREE.Group();group.add(model);
+    var sh=new THREE.Mesh(new THREE.CircleGeometry(1.5,40),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.26}));
+    sh.rotation.x=-Math.PI/2;sh.position.y=-1.98;group.add(sh);
+    S.root=group;S.sc.add(group);
+    var clip=PET_GLB_CLIP[type];
+    if(clip){try{S.mix=new THREE.AnimationMixer(model);S.mix.clipAction(clip).play();}catch(e){S.mix=null;}}
+    var topY=0.4;
+    try{var pb=boneBoxOf(model);if(!pb.isEmpty()&&isFinite(pb.max.y))topY=Math.min(pb.max.y,0.9);}catch(e){}
+    if(type==='dragon')topY=0.9;
+    if(level>=3){var cr=petCrown3D();cr.position.y=topY+0.14;group.add(cr);}
+    if(level>=5){var ha=new THREE.Mesh(new THREE.TorusGeometry(0.6,0.05,12,40),new THREE.MeshBasicMaterial({color:0xffd54f}));ha.rotation.x=Math.PI/2;ha.position.y=topY+0.55;group.add(ha);}
+  });
+}
 /* 裁掉烘焙图的透明边距，让模型填满容器 */
 function cropGLBCanvas(src){
   try{
@@ -3124,7 +3213,7 @@ levelUpCheck=function(id){
   _levelUpCheck(id);
   if(pd.level>before){
     var pet=PET_TYPES.find(function(p){return p.id===id;});
-    dingLevelUp(pet.name+' 升到 Lv.'+pd.level+' · 元力满满');
+    dingLevelUp((pet?pet.name:'宠物')+' 升到 Lv.'+pd.level+' · 元力满满');
   }
 };
 var _renderDash=renderDash;
