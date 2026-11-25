@@ -1,0 +1,4369 @@
+﻿<!DOCTYPE html>
+<!-- 牧橒成长工作台预览。用浏览器直接打开本文件即可，无需联网。源码在 src/，重新构建：node scripts/build.mjs 。乐园这一期是平面形象，没有内嵌 GLB。 -->
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>牧橒成长工作台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23070914'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%23ffd54f'/%3E%3C/svg%3E">
+<style>
+:root {
+  --cy: #3ee6ff;
+  --pk: #ff7ac8;
+  --gd: #ffd54f;
+  --pu: #a78bfa;
+  --ok: #5ee0a0;
+  --bg: #070914;
+  --ink: #eef6ff;
+  --muted: #b7c4de;
+  --card: rgba(14, 20, 46, 0.88);
+  --line: rgba(62, 230, 255, 0.28);
+  --shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background-color: #070914; color: #eef6ff; }
+html, body { background-color: var(--bg); color: var(--ink); }
+html { color-scheme: dark; }
+body {
+  min-height: 100%;
+  background:
+    radial-gradient(820px 420px at 0% -10%, rgba(62, 230, 255, 0.18), transparent 55%),
+    radial-gradient(640px 380px at 100% 0%, rgba(255, 122, 200, 0.16), transparent 50%),
+    radial-gradient(520px 420px at 50% 110%, rgba(167, 139, 250, 0.14), transparent 46%),
+    var(--bg);
+}
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:focus-visible, a:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--cy);
+  outline-offset: 2px;
+}
+.wrap {
+  width: min(480px, 100%);
+  margin: 0 auto;
+  padding: 14px 16px calc(108px + env(safe-area-inset-bottom));
+}
+body[data-route="today"] .wrap,
+body[data-route="feast"] .wrap { width: min(1080px, 100%); }
+body[data-route="today"] .wrap { padding: 4px 8px calc(64px + env(safe-area-inset-bottom)); }
+body[data-route="today"] .top { display: none; }
+body[data-route="feast"] .wrap,
+body[data-route="parent"] .wrap { padding-bottom: 28px; }
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.brand-name { font-size: 22px; font-weight: 800; letter-spacing: 0.04em; }
+.brand-sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.coin {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 213, 79, 0.12);
+  border: 1px solid rgba(255, 213, 79, 0.45);
+  color: var(--gd);
+}
+.coin b { font-size: 20px; }
+.coin span { font-size: 12px; }
+.card {
+  background: linear-gradient(180deg, rgba(20, 28, 62, 0.94), rgba(10, 14, 32, 0.92));
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 16px;
+  margin: 0 0 14px;
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.kicker {
+  color: var(--cy);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+}
+h1, h2 { margin: 6px 0 8px; line-height: 1.25; }
+h1 { font-size: 28px; }
+h2 { font-size: 18px; }
+.lead { font-size: 16px; line-height: 1.6; margin: 8px 0; }
+.fine, small { color: var(--muted); font-size: 13px; line-height: 1.55; }
+.decl { font-size: 16px; line-height: 1.75; }
+.yl-row, .stat4 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+.stat4 { grid-template-columns: repeat(4, 1fr); }
+.yl-pill, .stat4 div {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  padding: 8px 6px;
+  text-align: center;
+}
+.yl-pill b, .stat4 b { display: block; color: var(--c, var(--gd)); font-size: 18px; }
+.yl-pill span, .stat4 span { color: var(--muted); font-size: 12px; }
+.streak-card { display: flex; gap: 14px; align-items: center; }
+.streak-num { font-size: 48px; font-weight: 800; color: var(--gd); line-height: 1; }
+.streak-num small { font-size: 16px; margin-left: 4px; }
+.remain { list-style: none; padding: 0; margin: 8px 0; }
+.remain li { display: flex; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+.quote summary { cursor: pointer; font-weight: 800; min-height: 44px; display: flex; align-items: center; }
+.poem-line {
+  font-family: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", SimSun, serif;
+  font-size: 20px;
+  line-height: 1.7;
+}
+.btn-main, .btn-ghost, .btn-stop, .back, .tabbar button, .dish, .ck, .seg button, .seed, .cell, .shop-item, .poem-row, .link-quiet {
+  min-height: 48px;
+}
+.btn-main, .btn-ghost, .btn-stop {
+  width: 100%;
+  border-radius: 16px;
+  border: 0;
+  margin-top: 10px;
+  font-weight: 800;
+  font-size: 17px;
+}
+.btn-main {
+  color: #071018;
+  background: linear-gradient(135deg, var(--cy), #7cf0ff 40%, var(--pu) 78%, var(--pk));
+  box-shadow: 0 10px 28px rgba(62, 230, 255, 0.25);
+}
+.btn-main.slim { width: auto; padding: 0 16px; margin-top: 0; }
+.btn-ghost, .btn-stop {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.16);
+}
+.btn-stop { color: var(--pk); border-color: rgba(255,122,200,.45); }
+button:disabled { opacity: 0.45; cursor: default; }
+.link-quiet {
+  display: block;
+  width: 100%;
+  margin: 8px auto 0;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.text-btn {
+  background: none;
+  border: 0;
+  color: var(--cy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  min-height: 44px;
+  padding: 0 4px;
+}
+.tabbar {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(480px, 100%);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 6px 8px calc(8px + env(safe-area-inset-bottom));
+  background: rgba(7, 9, 20, 0.92);
+  border-top: 1px solid rgba(62, 230, 255, 0.2);
+  backdrop-filter: blur(10px);
+  z-index: 20;
+}
+.tabbar[hidden] { display: none; }
+.tabbar button {
+  background: transparent;
+  border: 0;
+  border-radius: 14px;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.tabbar button span { font-size: 18px; }
+.tabbar button.on { color: #071018; background: var(--cy); }
+.flow-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.flow-title { font-weight: 800; }
+.back {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 14px;
+  padding: 0 12px;
+}
+.sec { margin: 16px 4px 8px; font-size: 15px; color: var(--gd); }
+.dish {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  padding: 10px;
+  margin: 0 0 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.03);
+}
+.dish.on { border-color: var(--pk); box-shadow: inset 0 0 0 1px var(--pk); }
+.dish.done { opacity: 0.55; }
+.dish-ico {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: grid; place-items: center; flex: 0 0 auto; font-size: 20px;
+}
+.dish-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.dish-body em { font-style: normal; color: var(--gd); }
+.dish-body small { color: var(--muted); }
+.dish-mark { width: 28px; text-align: center; color: var(--ok); font-weight: 800; }
+.ck {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  margin: 0 0 8px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.03);
+}
+.ck .box {
+  width: 26px; height: 26px; border-radius: 8px;
+  border: 1px solid var(--cy); display: grid; place-items: center; color: #071018;
+}
+.ck.on { border-color: var(--cy); }
+.ck.on .box { background: var(--cy); }
+.work-card { text-align: center; }
+.pomo-time {
+  font-size: 68px;
+  font-weight: 800;
+  color: var(--gd);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+  margin: 8px 0;
+}
+.dur, .row2, .seeds, .seg { display: flex; gap: 8px; flex-wrap: wrap; }
+.dur { justify-content: center; }
+.dur button, .seg button {
+  border-radius: 999px;
+  border: 1px solid rgba(62,230,255,.35);
+  background: rgba(62,230,255,.08);
+  color: var(--cy);
+  padding: 0 14px;
+}
+.dur button.on, .seg button.on { background: var(--cy); color: #071018; }
+.row2 > * { flex: 1; }
+.cele { text-align: center; }
+.cele-big { font-size: 42px; letter-spacing: 4px; }
+.bar, .ml-bar i, .meter i {
+  display: block;
+  height: 8px;
+  border-radius: 99px;
+  background: rgba(255,255,255,.08);
+  overflow: hidden;
+}
+.bar > i, .ml-bar i b, .meter i b { display: block; height: 100%; background: linear-gradient(90deg, var(--cy), var(--pu)); }
+.ml-bar, .meter { display: grid; grid-template-columns: 64px 1fr auto; gap: 8px; align-items: center; margin: 8px 0; font-size: 13px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.chips span {
+  border: 1px solid rgba(255,213,79,.35);
+  color: var(--gd);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.chips span.hit { color: var(--ok); border-color: var(--ok); }
+.chips span.now { background: rgba(62,230,255,.15); }
+.poem-row, .shop-item, .seed, .cell {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  color: inherit;
+}
+.poem-row {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  margin: 0 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.poem-lines p { margin: 0 0 4px; font-family: "Songti SC", "STSong", "Noto Serif SC", SimSun, serif; font-size: 20px; line-height: 1.65; }
+.note, .hint {
+  background: rgba(255,213,79,.08);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #ffe7a3;
+  line-height: 1.6;
+}
+.rec-title { font-family: "Songti SC", "STSong", "Noto Serif SC", SimSun, serif; font-size: 36px; }
+.rates { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.rates button {
+  min-height: 64px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+}
+.rates button small { color: var(--muted); }
+.stem { font-size: 22px; line-height: 1.6; margin: 10px 0; font-family: "Songti SC", "STSong", "Noto Serif SC", SimSun, serif; }
+.stem.sm { font-size: 18px; }
+.blank { border-bottom: 2px solid var(--gd); color: transparent; }
+.opts { display: grid; gap: 8px; }
+.opt {
+  min-height: 48px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  text-align: left;
+  padding: 10px 12px;
+}
+.opt.right { border-color: var(--ok); color: var(--ok); }
+.opt.wrong { border-color: var(--pk); color: var(--pk); }
+.banner {
+  background: rgba(255,122,200,.12);
+  border: 1px solid rgba(255,122,200,.4);
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+.stage-card { text-align: center; }
+.pet-bob { width: min(220px, 70%); margin: 0 auto; animation: bob 3.2s ease-in-out infinite; }
+.pet-bob svg { width: 100%; height: auto; display: block; }
+.shop { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.shop-item, .seed { padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.shop-item.on, .seed.on { border-color: var(--cy); box-shadow: 0 0 0 1px var(--cy); }
+.thumb { width: 72px; height: 72px; }
+.thumb svg { width: 100%; height: 100%; }
+.shop-item em { font-style: normal; color: var(--gd); font-size: 12px; }
+.lawn {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 10px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(94,224,160,.18), transparent 40%),
+    #16301c;
+}
+.cell { aspect-ratio: 1; padding: 4px; }
+.cell svg { width: 100%; height: 100%; }
+.cell.ready { box-shadow: inset 0 0 0 2px var(--cy); }
+.cell.filled { border-color: rgba(94,224,160,.7); background: rgba(94,224,160,.08); }
+.seeds { margin-top: 8px; }
+.seed { flex: 1; }
+.rule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.rule > span:nth-child(2) { flex: 1; min-width: 8em; }
+.rule .no {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(167,139,250,.2); color: var(--pu); font-weight: 800;
+}
+.rule em { font-style: normal; color: var(--gd); font-size: 12px; }
+.rule .x, .x {
+  width: 44px; height: 44px; border-radius: 12px;
+  border: 0; background: transparent; color: var(--muted); font-size: 20px;
+}
+.row-add { display: flex; gap: 8px; margin-top: 10px; }
+input, textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(62,230,255,.3);
+  background: rgba(0,0,0,.25);
+  padding: 12px;
+  margin: 6px 0 8px;
+}
+.q { display: block; margin: 8px 0; font-size: 14px; }
+.exp, .patch, .log { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+.log span { color: var(--cy); margin-right: 8px; }
+.radar { width: 100%; height: auto; }
+.radar-list p { display: flex; gap: 6px; align-items: baseline; }
+.radar-list em { margin-left: auto; color: var(--gd); font-style: normal; font-weight: 800; }
+.link-row { display: flex; gap: 8px; align-items: flex-start; padding: 8px 0; }
+.tag { font-size: 12px; font-weight: 800; min-width: 52px; }
+.parent-note { margin-top: 0; }
+.parent-list, .stuck { list-style: none; padding: 0; margin: 0; }
+.parent-list li, .stuck li {
+  display: flex; gap: 8px; align-items: baseline;
+  padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.parent-list li.ok b { color: var(--ok); }
+.parent-list small { margin-left: auto; }
+.file { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(12px);
+  width: min(420px, calc(100% - 32px));
+  background: rgba(8, 12, 28, 0.94);
+  border: 1px solid rgba(255, 213, 79, 0.55);
+  color: var(--gd);
+  border-radius: 14px;
+  padding: 12px 14px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 40;
+  transition: opacity .2s ease, transform .2s ease;
+}
+body[data-route="feast"] .toast,
+body[data-route="parent"] .toast { bottom: 24px; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.boot-error { border-color: rgba(255, 122, 200, 0.85); color: #ffe4f3; }
+.boot-error[hidden] { display: none; }
+.boot-error b { display: block; color: #ff7ac8; margin-bottom: 6px; }
+.boot-error pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 0; color: #ffe4f3; }
+.static-help { color: var(--gd); }
+a.btn-main { display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.burst { position: fixed; inset: 0; pointer-events: none; z-index: 35; }
+.burst span { position: absolute; top: 42%; font-size: 22px; animation: floatUp 1s ease-out forwards; }
+@keyframes bob { 50% { transform: translateY(-6px); } }
+@keyframes floatUp { to { transform: translateY(-160px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .pet-bob, .burst span { animation: none; }
+  .toast { transition: none; }
+}
+@media (max-width: 420px) {
+  .rates { grid-template-columns: 1fr; }
+  .stat4 { grid-template-columns: repeat(2, 1fr); }
+  h1 { font-size: 26px; }
+  .pomo-time { font-size: 60px; }
+}
+
+/* 今日工作室：作品墙填中间。整页不锁滚动。 */
+.studio { display: grid; gap: 6px; }
+.studio-id, .side-card {
+  background: linear-gradient(180deg, rgba(20, 28, 62, 0.94), rgba(10, 14, 32, 0.92));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 8px 10px;
+}
+.studio-when { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.studio-when b { font-size: 22px; color: var(--cy); font-variant-numeric: tabular-nums; }
+.studio-when span { color: var(--muted); font-size: 12px; }
+.studio-who { margin: 2px 0 0; font-size: 14px; font-weight: 800; }
+.studio-focus { margin: 0; color: var(--gd); font-size: 13px; }
+.studio-stats { display: flex; gap: 12px; margin-top: 4px; font-size: 12px; color: var(--muted); }
+.studio-stats b { color: var(--gd); font-size: 16px; margin-right: 3px; }
+.studio-yl { margin: 2px 0 0; font-size: 12px; color: var(--cy); }
+.wall {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  align-content: stretch;
+}
+.work {
+  min-height: 44px;
+  border-radius: 10px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.12);
+}
+.work b { font-size: 11px; line-height: 1.25; }
+.work small { font-size: 10px; color: var(--muted); }
+.work.doing { border-color: var(--pk); background: rgba(255,122,200,.12); }
+.work.doing small { color: var(--pk); }
+.work.done { border-color: rgba(94,224,160,.7); background: rgba(94,224,160,.12); }
+.work.done small { color: var(--ok); }
+.studio-side { display: grid; gap: 6px; }
+.schedule .kicker { margin-bottom: 4px; }
+.period {
+  display: grid;
+  grid-template-columns: 42px 1fr auto auto;
+  gap: 4px;
+  align-items: center;
+  font-size: 12px;
+  padding: 1px 0;
+}
+.period em { font-style: normal; color: var(--muted); font-variant-numeric: tabular-nums; }
+.period .period-mark { font-style: normal; color: var(--cy); font-size: 11px; min-width: 36px; text-align: right; }
+.period.past { opacity: .45; }
+.period.now { background: rgba(62,230,255,.12); border-radius: 6px; }
+.period.now .period-mark { color: var(--gd); }
+.schedule-note, .side-empty { margin: 4px 0 0; font-size: 10px; color: var(--muted); }
+.side-card.mini p { margin: 2px 0; font-size: 12px; line-height: 1.35; }
+.poem-bit span { color: var(--muted); }
+.pet-bit { display: flex; align-items: center; gap: 6px; }
+.pet-bit svg { width: 36px; height: 36px; flex: 0 0 auto; }
+.studio-go { margin: 0; min-height: 42px; }
+.board-parent {
+  min-height: 22px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (min-width: 960px) {
+  .studio {
+    grid-template-columns: 230px minmax(0, 1fr) 300px;
+    grid-template-rows: 1fr auto;
+    align-items: stretch;
+    min-height: calc(100vh - 150px);
+  }
+  .studio-id { grid-column: 1; grid-row: 1; align-self: start; }
+  .wall { grid-column: 2; grid-row: 1 / span 2; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; align-self: stretch; }
+  .studio-side { grid-column: 3; grid-row: 1 / span 2; align-self: start; align-content: start; }
+}
+
+/* 点餐：分类栏 + 菜品卡 + 已点菜栏。不是商家官网。 */
+.order-layout { display: flex; gap: 8px; align-items: flex-start; }
+.order-nav {
+  position: sticky;
+  top: 6px;
+  width: 68px;
+  flex: 0 0 68px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.order-nav button {
+  min-height: 52px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,122,200,.35);
+  background: rgba(255,122,200,.08);
+  color: #ffd0ea;
+  font-size: 12px;
+  font-weight: 800;
+}
+.order-nav button span { display: block; font-size: 16px; }
+.order-list { flex: 1; min-width: 0; }
+.order-sec { margin: 4px 0 6px; font-size: 14px; color: var(--gd); scroll-margin-top: 8px; scroll-margin-bottom: 140px; }
+.order-grid { display: grid; gap: 8px; }
+.menu-card {
+  width: 100%;
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+}
+.menu-card.on { border-color: var(--pk); box-shadow: inset 0 0 0 1px var(--pk); }
+.menu-card.done { opacity: .5; }
+.menu-ico { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; }
+.menu-main { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.menu-main b { font-size: 16px; }
+.menu-task { color: var(--cy); font-size: 12px; }
+.menu-meta { color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.menu-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.menu-price b { color: var(--gd); font-size: 18px; line-height: 1; }
+.menu-price small { display: block; color: var(--gd); font-size: 10px; text-align: right; }
+.menu-qty {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 99px;
+  display: grid;
+  place-items: center;
+  background: rgba(62,230,255,.16);
+  color: var(--cy);
+  font-weight: 800;
+}
+.menu-card.on .menu-qty { background: var(--pk); color: #1a0a14; }
+.order-screen { padding-bottom: 118px; }
+.cart-bar {
+  position: fixed;
+  z-index: 25;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(1080px, 100%);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  background: rgba(8, 10, 22, .96);
+  border-top: 1px solid rgba(255,122,200,.45);
+}
+.cart-info { flex: 1; min-width: 0; }
+.cart-info b { display: block; }
+.cart-info span { display: block; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cart-info em { color: var(--gd); font-style: normal; font-size: 12px; }
+.cart-go { width: auto; min-width: 132px; margin: 0; min-height: 44px; flex: 0 0 auto; }
+@media (max-width: 560px) {
+  .cart-bar { flex-wrap: wrap; }
+  .cart-go { width: 100%; }
+}
+@media (min-width: 860px) {
+  .order-grid { grid-template-columns: 1fr 1fr; }
+  .order-nav { width: 88px; flex-basis: 88px; }
+}
+
+</style>
+</head>
+<body>
+<p id="plain-banner" style="position:relative;z-index:100000;display:block;box-sizing:border-box;margin:0;padding:8px 12px;color:#1b1408 !important;background:#fff4d6 !important;font:13px/1.35 'Microsoft YaHei',sans-serif;color-scheme:light;">牧橒成长工作台已打开。这行字不靠页面样式。若下面是空的，请勾选「解除锁定」。</p>
+<div class="wrap">
+  <div id="boot-error" class="card boot-error" hidden></div>
+  <header class="top" id="top">
+    <div class="brand">
+      <div class="brand-name">陈牧橒</div>
+      <div class="brand-sub">今日 · 牧橒成长工作台</div>
+    </div>
+    <div class="coin"><b>—</b><span>阳光</span></div>
+  </header>
+  <main id="view">
+    <section class="card">
+      <div class="kicker">我的主线</div>
+      <h1>人生设计师</h1>
+      <p class="decl">我是陈牧橒，人生设计师。<br>我不只想设计房子和衣服，我要设计我自己的人生。</p>
+      <p class="fine static-help">若点了没反应：在这个文件上右键 → 属性 → 勾选「解除锁定」，再双击打开。</p>
+    </section>
+    <section class="card">
+      <div class="kicker">今日还剩</div>
+      <p class="lead">今天的菜还没点。十三道菜都在菜单里，想做哪件点哪件。</p>
+      <p class="fine">连续打卡从打开这一页开始算。晨读是四年级上的 25 首。</p>
+    </section>
+    <details class="card quote" open>
+      <summary>今日一句</summary>
+      <p class="poem-line">空山不见人，<br>但闻人语响。</p>
+      <p class="fine">—— 唐·王维《鹿柴》</p>
+    </details>
+    <p class="fine static-help" id="static-help">开始大餐、晨读、领养和存档都在这一页里。如果点了没有反应，多半是浏览器拦住了从聊天下载的脚本：在文件上点右键，选属性，勾选最下面的「解除锁定」，确定后重新双击打开。</p>
+    <a class="btn-main" href="#static-help">开始大餐</a>
+  </main>
+  <noscript>
+    <section class="card">
+      <p>浏览器没有运行脚本。上面的今日页可以看。点餐、番茄钟、晨读记录和存档，要允许这个文件运行脚本之后才会动。</p>
+    </section>
+  </noscript>
+</div>
+<nav class="tabbar" id="tabbar" aria-label="孩子端">
+  <button type="button" class="on" aria-current="page" data-go="today"><span aria-hidden="true">☀️</span>今日</button>
+  <button type="button" data-go="morning"><span aria-hidden="true">📖</span>晨读</button>
+  <button type="button" data-go="park"><span aria-hidden="true">🐾</span>乐园</button>
+  <button type="button" data-go="mainline"><span aria-hidden="true">🧭</span>主线</button>
+</nav>
+<div class="toast" id="toast" role="status"></div>
+<script>
+window.showBootError = function (err, title) {
+  var box = document.getElementById('boot-error');
+  if (!box) return;
+  var msg = '';
+  if (err && err.stack) msg = String(err.stack);
+  else if (err && err.message) msg = String(err.message);
+  else msg = String(err || '未知错误');
+  box.hidden = false;
+  box.textContent = '';
+  var heading = document.createElement('b');
+  heading.textContent = title || '脚本没有顺利跑完';
+  var pre = document.createElement('pre');
+  pre.textContent = msg;
+  box.appendChild(heading);
+  box.appendChild(pre);
+};
+window.onerror = function (message, source, line, col, err) {
+  window.showBootError(err || (String(message) + (line ? '（第 ' + line + ' 行）' : '')));
+};
+window.addEventListener('unhandledrejection', function (ev) {
+  window.showBootError(ev && ev.reason ? ev.reason : ev);
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+try {
+
+/* ===== data/tasks.js ===== */
+/* 任务、能力维度、生日。
+   内容迁自仓库根目录 index.html，诗句、菜名、数值保持原样。 */
+(function (MY) {
+  'use strict';
+  MY.TASK_GROUPS = [
+  {
+    "key": "must",
+    "icon": "🥢",
+    "bg": "rgba(255,82,82,.15)",
+    "tasks": [
+      {
+        "id": "homework",
+        "name": "语数英校内作业",
+        "dish": "经典毛肚",
+        "reward": 30,
+        "meta": "脆嫩爽口，必点招牌"
+      },
+      {
+        "id": "baji",
+        "name": "八极拳",
+        "dish": "脆虾滑",
+        "reward": 85,
+        "meta": "劲道Q弹，招牌必点"
+      }
+    ]
+  },
+  {
+    "key": "veg",
+    "icon": "🥬",
+    "bg": "rgba(76,175,80,.15)",
+    "tasks": [
+      {
+        "id": "zaodu",
+        "name": "早读",
+        "dish": "田园菠菜",
+        "reward": 16,
+        "meta": "清脆健康，点了背诗"
+      },
+      {
+        "id": "wandu",
+        "name": "晚读",
+        "dish": "翠绿水芹",
+        "reward": 14,
+        "meta": "清爽可口，复习一下"
+      },
+      {
+        "id": "reading",
+        "name": "阅读理解",
+        "dish": "茼蒿",
+        "reward": 18,
+        "meta": "清香入味，读懂文章"
+      }
+    ]
+  },
+  {
+    "key": "snack",
+    "icon": "🍢",
+    "bg": "rgba(255,152,0,.15)",
+    "tasks": [
+      {
+        "id": "thinking",
+        "name": "思维课",
+        "dish": "现炸小酥肉",
+        "reward": 22,
+        "meta": "外酥里嫩，烧脑必备"
+      },
+      {
+        "id": "dino",
+        "name": "迪诺",
+        "dish": "红糖糍粑",
+        "reward": 17,
+        "meta": "香甜软糯，坚持打卡"
+      },
+      {
+        "id": "oral",
+        "name": "口算",
+        "dish": "手工拉面",
+        "reward": 15,
+        "meta": "劲道爽滑，每天一练"
+      },
+      {
+        "id": "baicixuan",
+        "name": "百词斩",
+        "dish": "龙抄手",
+        "reward": 19,
+        "meta": "皮薄馅嫩，背单词"
+      },
+      {
+        "id": "dictation",
+        "name": "听写",
+        "dish": "手搓冰粉",
+        "reward": 13,
+        "meta": "冰爽解辣，生字听写"
+      },
+      {
+        "id": "handwriting",
+        "name": "练字",
+        "dish": "香酥油条",
+        "reward": 12,
+        "meta": "金黄酥脆，写好字"
+      },
+      {
+        "id": "reading2",
+        "name": "阅读",
+        "dish": "南瓜饼",
+        "reward": 20,
+        "meta": "香甜可口，课外阅读"
+      },
+      {
+        "id": "teacher",
+        "name": "小老师",
+        "dish": "千张豆皮",
+        "reward": 21,
+        "meta": "嚼劲十足，讲给爸妈"
+      }
+    ]
+  }
+];
+  MY.GROUP_TITLES = { must: '🥢 招牌必点', veg: '🥬 时蔬拼盘', snack: '🍢 特色小食' };
+  MY.ALL_TASKS = MY.TASK_GROUPS.flatMap(function (g) { return g.tasks; });
+  MY.CORE_ATTRS = [
+  {
+    "key": "道德修养",
+    "icon": "🛡️",
+    "desc": "品德修养",
+    "tasks": [
+      "baji"
+    ]
+  },
+  {
+    "key": "学业水平",
+    "icon": "📚",
+    "desc": "语数英成绩",
+    "tasks": [
+      "homework",
+      "oral",
+      "reading",
+      "baicixuan",
+      "dictation"
+    ]
+  },
+  {
+    "key": "身心健康",
+    "icon": "💪",
+    "desc": "体育锻炼",
+    "tasks": [
+      "baji",
+      "wandu"
+    ]
+  },
+  {
+    "key": "艺术素养",
+    "icon": "🎨",
+    "desc": "文学鉴赏",
+    "tasks": [
+      "zaodu",
+      "handwriting"
+    ]
+  },
+  {
+    "key": "劳动意识",
+    "icon": "🌱",
+    "desc": "日常劳动",
+    "tasks": [
+      "dino"
+    ]
+  },
+  {
+    "key": "实践创新",
+    "icon": "💡",
+    "desc": "创新思维",
+    "tasks": [
+      "thinking",
+      "teacher"
+    ]
+  },
+  {
+    "key": "交流合作",
+    "icon": "🤝",
+    "desc": "沟通合作",
+    "tasks": [
+      "zaodu",
+      "reading",
+      "teacher"
+    ]
+  },
+  {
+    "key": "自主学习",
+    "icon": "📖",
+    "desc": "自我管理",
+    "tasks": [
+      "zaodu",
+      "wandu",
+      "reading",
+      "oral",
+      "homework",
+      "reading2",
+      "handwriting"
+    ]
+  }
+];
+  MY.BIRTHDAY = new Date(2016, 10, 3);
+  MY.taskById = function (id) {
+    return MY.ALL_TASKS.filter(function (t) { return t.id === id; })[0] || null;
+  };
+})(window.MY = window.MY || {});
+
+
+/* ===== data/timetable.js ===== */
+/* 今日课表。示例数据，改 MY.TIMETABLE.week 即可换成牧橒的正式课表。
+   week 的键是星期：1 周一 … 5 周五。0 周日、6 周六没有校内课。 */
+(function (MY) {
+  'use strict';
+
+  MY.TIMETABLE = {
+    placeholder: true,
+    note: '示例课表，待换成牧橒的正式课表',
+    periods: [
+      { n: 1, start: '08:20', end: '09:00' },
+      { n: 2, start: '09:10', end: '09:50' },
+      { n: 3, start: '10:10', end: '10:50' },
+      { n: 4, start: '11:00', end: '11:40' },
+      { n: 5, start: '14:00', end: '14:40' },
+      { n: 6, start: '14:50', end: '15:30' },
+      { n: 7, start: '16:40', end: '17:20', interest: true }
+    ],
+    week: {
+      1: ['语文', '数学', '英语', '体育', '语文', '阅读', '八极拳'],
+      2: ['数学', '语文', '英语', '语文', '数学', '体育', '八极拳'],
+      3: ['语文', '英语', '数学', '体育', '阅读', '英语', '思维课'],
+      4: ['数学', '语文', '英语', '阅读', '数学', '体育', '八极拳'],
+      5: ['语文', '数学', '英语', '体育', '语文', '阅读', '八极拳']
+    }
+  };
+
+  function minutes(hm) {
+    var p = String(hm).split(':');
+    return (+p[0]) * 60 + (+p[1] || 0);
+  }
+
+  MY.todayClasses = function (now) {
+    now = now || new Date();
+    var day = now.getDay();
+    var subjects = MY.TIMETABLE.week[day] || null;
+    var cur = now.getHours() * 60 + now.getMinutes();
+    var list = MY.TIMETABLE.periods.map(function (slot, i) {
+      var start = minutes(slot.start);
+      var end = minutes(slot.end);
+      var state = 'later';
+      if (cur >= end) state = 'past';
+      else if (cur >= start) state = 'now';
+      return {
+        n: slot.n,
+        start: slot.start,
+        end: slot.end,
+        interest: !!slot.interest,
+        subject: subjects ? subjects[i] : '',
+        state: state
+      };
+    });
+    return { day: day, inSchool: !!subjects, list: list, note: MY.TIMETABLE.note };
+  };
+})(window.MY = window.MY || {});
+
+
+/* ===== data/poems.js ===== */
+/* 四年级上 25 首与 gushi-337 排程。勿改诗句。
+   内容迁自仓库根目录 index.html，诗句、菜名、数值保持原样。 */
+(function (MY) {
+  'use strict';
+  MY.POEMS = [
+  {
+    "id": 1,
+    "no": 1,
+    "title": "鹿柴",
+    "dynasty": "唐",
+    "author": "王维",
+    "genre": "wuyan",
+    "level": 1,
+    "lines": [
+      "空山不见人，",
+      "但闻人语响。",
+      "返景入深林，",
+      "复照青苔上。"
+    ],
+    "note": "「返景」读 fǎn jǐng，是夕阳返照的光，别写成「返影」",
+    "hint": "看不见人，只听见声音——以「响」衬「静」，是王维写静的绝招。"
+  },
+  {
+    "id": 2,
+    "no": 2,
+    "title": "暮江吟",
+    "dynasty": "唐",
+    "author": "白居易",
+    "genre": "qiyan",
+    "level": 1,
+    "lines": [
+      "一道残阳铺水中，",
+      "半江瑟瑟半江红。",
+      "可怜九月初三夜，",
+      "露似真珠月似弓。"
+    ],
+    "note": "「瑟瑟」是碧绿色；课本作「真珠」，别写成「珍珠」",
+    "hint": "一个「铺」字写出夕阳贴着水面，斜照才有一半红一半绿。"
+  },
+  {
+    "id": 3,
+    "no": 3,
+    "title": "题西林壁",
+    "dynasty": "宋",
+    "author": "苏轼",
+    "genre": "qiyan",
+    "level": 1,
+    "lines": [
+      "横看成岭侧成峰，",
+      "远近高低各不同。",
+      "不识庐山真面目，",
+      "只缘身在此山中。"
+    ],
+    "note": "「缘」是因为。末两句是常考的「即景说理」名句",
+    "hint": "看不清庐山，不是因为眼力差，而是因为站得太近——当局者迷。"
+  },
+  {
+    "id": 4,
+    "no": 4,
+    "title": "雪梅",
+    "dynasty": "宋",
+    "author": "卢钺",
+    "genre": "qiyan",
+    "level": 2,
+    "lines": [
+      "梅雪争春未肯降，",
+      "骚人阁笔费评章。",
+      "梅须逊雪三分白，",
+      "雪却输梅一段香。"
+    ],
+    "note": "「降」读 xiáng（服输）；「阁」通「搁」；「逊」是不如",
+    "hint": "梅不如雪白，雪不如梅香——各有长短，谁也赢不了谁。"
+  },
+  {
+    "id": 5,
+    "no": 5,
+    "title": "嫦娥",
+    "dynasty": "唐",
+    "author": "李商隐",
+    "genre": "qiyan",
+    "level": 2,
+    "lines": [
+      "云母屏风烛影深，",
+      "长河渐落晓星沉。",
+      "嫦娥应悔偷灵药，",
+      "碧海青天夜夜心。"
+    ],
+    "note": "「长河」指银河；「晓星」是启明星",
+    "hint": "一夜没睡到天亮：烛影深、银河落、晓星沉，三层时间推移写孤独。"
+  },
+  {
+    "id": 6,
+    "no": 6,
+    "title": "出塞",
+    "dynasty": "唐",
+    "author": "王昌龄",
+    "genre": "qiyan",
+    "level": 2,
+    "lines": [
+      "秦时明月汉时关，",
+      "万里长征人未还。",
+      "但使龙城飞将在，",
+      "不教胡马度阴山。"
+    ],
+    "note": "「但使」是只要；「龙城飞将」指李广；「不教」读 bù jiào",
+    "hint": "「秦月」对「汉关」，跨越千年，被誉為唐代七绝的压卷之作。"
+  },
+  {
+    "id": 7,
+    "no": 7,
+    "title": "凉州词",
+    "dynasty": "唐",
+    "author": "王翰",
+    "genre": "qiyan",
+    "level": 2,
+    "lines": [
+      "葡萄美酒夜光杯，",
+      "欲饮琵琶马上催。",
+      "醉卧沙场君莫笑，",
+      "古来征战几人回。"
+    ],
+    "note": "「夜光杯」是白玉酒杯；「沙场」即战场",
+    "hint": "前两句有多热闹，后两句就有多悲凉——豪放里藏着反战。"
+  },
+  {
+    "id": 8,
+    "no": 8,
+    "title": "夏日绝句",
+    "dynasty": "宋",
+    "author": "李清照",
+    "genre": "wuyan",
+    "level": 1,
+    "lines": [
+      "生当作人杰，",
+      "死亦为鬼雄。",
+      "至今思项羽，",
+      "不肯过江东。"
+    ],
+    "note": "「人杰」「鬼雄」；项羽自刎乌江，不肯回江东",
+    "hint": "李清照是婉约派，却写出最刚烈的一首——借项羽讽刺南宋朝廷。"
+  },
+  {
+    "id": 9,
+    "no": 9,
+    "title": "别董大",
+    "dynasty": "唐",
+    "author": "高适",
+    "genre": "qiyan",
+    "level": 2,
+    "lines": [
+      "千里黄云白日曛，",
+      "北风吹雁雪纷纷。",
+      "莫愁前路无知己，",
+      "天下谁人不识君。"
+    ],
+    "note": "「曛」读 xūn，昏暗的意思；「知己」是知心朋友",
+    "hint": "送别诗大多伤感，高适偏要劝：你这么有名，前路怕什么。"
+  },
+  {
+    "id": 10,
+    "no": 10,
+    "title": "浪淘沙·其七",
+    "dynasty": "唐",
+    "author": "刘禹锡",
+    "genre": "qiyan",
+    "level": 2,
+    "lines": [
+      "八月涛声吼地来，",
+      "头高数丈触山回。",
+      "须臾却入海门去，",
+      "卷起沙堆似雪堆。"
+    ],
+    "note": "「须臾」是片刻；「海门」是钱塘江入海口",
+    "hint": "写钱塘江潮：来时「吼地来」，去时「须臾」，一涨一退只用四句。"
+  },
+  {
+    "id": 11,
+    "no": 11,
+    "title": "乡村四月",
+    "dynasty": "宋",
+    "author": "翁卷",
+    "genre": "qiyan",
+    "level": 2,
+    "lines": [
+      "绿遍山原白满川，",
+      "子规声里雨如烟。",
+      "乡村四月闲人少，",
+      "才了蚕桑又插田。"
+    ],
+    "note": "「子规」是杜鹃鸟；「才了」是刚刚做完；「了」读 liǎo",
+    "hint": "前两句写景，后两句写人——「才了……又……」写出农忙不停。"
+  },
+  {
+    "id": 12,
+    "no": 12,
+    "title": "野望",
+    "dynasty": "唐",
+    "author": "王绩",
+    "genre": "wuyan",
+    "level": 3,
+    "lines": [
+      "东皋薄暮望，",
+      "徙倚欲何依。",
+      "树树皆秋色，",
+      "山山唯落晖。",
+      "牧人驱犊返，",
+      "猎马带禽归。",
+      "相顾无相识，",
+      "长歌怀采薇。"
+    ],
+    "note": "「皋」读 gāo；「徙倚」读 xǐ yǐ（徘徊）；「犊」读 dú（小牛）；「采薇」用伯夷叔齐典故",
+    "hint": "人人都在回家，只有诗人无处可依——最早的成熟五言律诗之一。"
+  },
+  {
+    "id": 13,
+    "no": 13,
+    "title": "使至塞上",
+    "dynasty": "唐",
+    "author": "王维",
+    "genre": "wuyan",
+    "level": 3,
+    "lines": [
+      "单车欲问边，",
+      "属国过居延。",
+      "征蓬出汉塞，",
+      "归雁入胡天。",
+      "大漠孤烟直，",
+      "长河落日圆。",
+      "萧关逢候骑，",
+      "都护在燕然。"
+    ],
+    "note": "「征蓬」是飘飞的蓬草；「候骑」读 hòu jì（侦察骑兵）；「燕然」读 yān rán",
+    "hint": "「大漠孤烟直，长河落日圆」——王国维称为「千古壮观」。"
+  },
+  {
+    "id": 14,
+    "no": 14,
+    "title": "冬夜读书示子聿",
+    "dynasty": "宋",
+    "author": "陆游",
+    "genre": "qiyan",
+    "level": 2,
+    "lines": [
+      "古人学问无遗力，",
+      "少壮工夫老始成。",
+      "纸上得来终觉浅，",
+      "绝知此事要躬行。"
+    ],
+    "note": "「聿」读 yù；「躬行」是亲身实践；「工夫」别写成「功夫」",
+    "hint": "陆游写给小儿子：读书之外，更要亲手去做——知和行要合一。"
+  },
+  {
+    "id": 15,
+    "no": 15,
+    "title": "山中留客",
+    "dynasty": "唐",
+    "author": "张旭",
+    "genre": "qiyan",
+    "level": 2,
+    "lines": [
+      "山光物态弄春晖，",
+      "莫为轻阴便拟归。",
+      "纵使晴明无雨色，",
+      "入云深处亦沾衣。"
+    ],
+    "note": "「轻阴」是微阴；「拟归」是打算回去",
+    "hint": "一个「弄」字把山写活了；留客不说「别走」，说「你会被云雾打湿」。"
+  },
+  {
+    "id": 16,
+    "no": 16,
+    "title": "塞上听吹笛",
+    "dynasty": "唐",
+    "author": "高适",
+    "genre": "qiyan",
+    "level": 3,
+    "lines": [
+      "雪净胡天牧马还，",
+      "月明羌笛戍楼间。",
+      "借问梅花何处落，",
+      "风吹一夜满关山。"
+    ],
+    "note": "「羌笛」读 qiāng dí；「戍楼」读 shù lóu；「梅花」指笛曲《梅花落》",
+    "hint": "把曲名「梅花落」拆开成「梅花何处落」，听笛听出满山落花。"
+  },
+  {
+    "id": 17,
+    "no": 17,
+    "title": "渡荆门送别",
+    "dynasty": "唐",
+    "author": "李白",
+    "genre": "wuyan",
+    "level": 3,
+    "lines": [
+      "渡远荆门外，",
+      "来从楚国游。",
+      "山随平野尽，",
+      "江入大荒流。",
+      "月下飞天镜，",
+      "云生结海楼。",
+      "仍怜故乡水，",
+      "万里送行舟。"
+    ],
+    "note": "「大荒」是辽阔原野；「海楼」是海市蜃楼；「怜」是爱",
+    "hint": "24 岁的李白第一次出蜀：「山随平野尽」写船走山退的动感。"
+  },
+  {
+    "id": 18,
+    "no": 18,
+    "title": "赤壁",
+    "dynasty": "唐",
+    "author": "杜牧",
+    "genre": "qiyan",
+    "level": 2,
+    "lines": [
+      "折戟沉沙铁未销，",
+      "自将磨洗认前朝。",
+      "东风不与周郎便，",
+      "铜雀春深锁二乔。"
+    ],
+    "note": "「折戟」读 zhé jǐ；「周郎」是周瑜；「二乔」是大乔小乔",
+    "hint": "不写大军成败，只写「二乔」——杜牧最擅长的以小见大。"
+  },
+  {
+    "id": 19,
+    "no": 19,
+    "title": "泊秦淮",
+    "dynasty": "唐",
+    "author": "杜牧",
+    "genre": "qiyan",
+    "level": 2,
+    "lines": [
+      "烟笼寒水月笼沙，",
+      "夜泊秦淮近酒家。",
+      "商女不知亡国恨，",
+      "隔江犹唱后庭花。"
+    ],
+    "note": "「商女」是歌女；《后庭花》即《玉树后庭花》，亡国之音",
+    "hint": "两个「笼」字把烟、水、月、沙搅在一起；骂的不是歌女，是听曲的人。"
+  },
+  {
+    "id": 20,
+    "no": 20,
+    "title": "水调歌头",
+    "dynasty": "宋",
+    "author": "苏轼",
+    "genre": "ciqu",
+    "level": 4,
+    "lines": [
+      "明月几时有？",
+      "把酒问青天。",
+      "不知天上宫阙，",
+      "今夕是何年。",
+      "我欲乘风归去，",
+      "又恐琼楼玉宇，",
+      "高处不胜寒。",
+      "起舞弄清影，",
+      "何似在人间！",
+      "转朱阁，",
+      "低绮户，",
+      "照无眠。",
+      "不应有恨，",
+      "何事长向别时圆？",
+      "人有悲欢离合，",
+      "月有阴晴圆缺，",
+      "此事古难全。",
+      "但愿人长久，",
+      "千里共婵娟。"
+    ],
+    "note": "「宫阙」读 gōng què；「绮户」读 qǐ hù；「婵娟」读 chán juān；「不胜寒」的「胜」读 shèng",
+    "hint": "中秋词之首。上阕问天、下阕问月，最后落到「人长久」——写给弟弟苏辙。"
+  },
+  {
+    "id": 21,
+    "no": 21,
+    "title": "满江红",
+    "dynasty": "宋",
+    "author": "岳飞",
+    "genre": "ciqu",
+    "level": 5,
+    "lines": [
+      "怒发冲冠，",
+      "凭阑处、潇潇雨歇。",
+      "抬望眼、仰天长啸，",
+      "壮怀激烈。",
+      "三十功名尘与土，",
+      "八千里路云和月。",
+      "莫等闲、白了少年头，",
+      "空悲切。",
+      "靖康耻，",
+      "犹未雪。",
+      "臣子恨，",
+      "何时灭。",
+      "驾长车踏破，",
+      "贺兰山缺。",
+      "壮志饥餐胡虏肉，",
+      "笑谈渴饮匈奴血。",
+      "待从头、收拾旧山河，",
+      "朝天阙。"
+    ],
+    "note": "「冠」读 guān；「阑」同「栏」；「虏」读 lǔ；「朝天阙」读 cháo tiān què",
+    "hint": "情绪三段：凭栏怒→雪耻恨→收拾山河。背的时候按情绪走，就不会串。"
+  },
+  {
+    "id": 22,
+    "no": 22,
+    "title": "天净沙·秋思",
+    "dynasty": "元",
+    "author": "马致远",
+    "genre": "ciqu",
+    "level": 2,
+    "lines": [
+      "枯藤老树昏鸦，",
+      "小桥流水人家，",
+      "古道西风瘦马。",
+      "夕阳西下，",
+      "断肠人在天涯。"
+    ],
+    "note": "「昏鸦」是黄昏归巢的乌鸦；「断肠人」指漂泊思乡的人",
+    "hint": "前三句 18 个字堆了 9 个名词，几乎不用动词——「秋思之祖」。"
+  },
+  {
+    "id": 23,
+    "no": 23,
+    "title": "天净沙·秋思（其二）",
+    "dynasty": "元",
+    "author": "马致远",
+    "genre": "ciqu",
+    "level": 3,
+    "lines": [
+      "平沙细草斑斑，",
+      "曲溪流水潺潺。",
+      "塞上清秋早寒。",
+      "一声新雁，",
+      "黄云红叶青山。"
+    ],
+    "note": "「潺潺」读 chán chán；「塞上」读 sài shàng",
+    "hint": "和「枯藤老树」是同一曲牌：先看景，最后「一声新雁」把画面点活。"
+  },
+  {
+    "id": 24,
+    "no": 24,
+    "title": "南乡子·登京口北固亭有怀",
+    "dynasty": "宋",
+    "author": "辛弃疾",
+    "genre": "ciqu",
+    "level": 4,
+    "lines": [
+      "何处望神州？",
+      "满眼风光北固楼。",
+      "千古兴亡多少事？",
+      "悠悠。",
+      "不尽长江滚滚流。",
+      "年少万兜鍪，",
+      "坐断东南战未休。",
+      "天下英雄谁敌手？",
+      "曹刘。",
+      "生子当如孙仲谋。"
+    ],
+    "note": "「兜鍪」读 dōu móu（头盔，代指士兵）；「坐断」是占据；「仲」读 zhòng",
+    "hint": "三问三答：问神州、问兴亡、问英雄——借孙权讽刺南宋无人。"
+  },
+  {
+    "id": 25,
+    "no": 25,
+    "title": "精卫填海",
+    "dynasty": "先秦",
+    "author": "《山海经·北山经》",
+    "genre": "ciqu",
+    "level": 3,
+    "lines": [
+      "炎帝之少女，",
+      "名曰女娃。",
+      "女娃游于东海，",
+      "溺而不返，",
+      "故为精卫，",
+      "常衔西山之木石，",
+      "以堙于东海。"
+    ],
+    "note": "「少女」是小女儿；「溺」读 nì（淹没）；「堙」读 yīn（填塞）；「衔」读 xián",
+    "hint": "全文只有 35 个字，因果链：游→溺→化→衔→堙，按顺序串起来就好背。"
+  }
+];
+  MY.GENRES = {
+  "wuyan": {
+    "key": "wuyan",
+    "name": "五言诗",
+    "short": "五言",
+    "icon": "五"
+  },
+  "qiyan": {
+    "key": "qiyan",
+    "name": "七言诗",
+    "short": "七言",
+    "icon": "七"
+  },
+  "ciqu": {
+    "key": "ciqu",
+    "name": "词·曲·文",
+    "short": "词曲文",
+    "icon": "词"
+  }
+};
+  MY.WEEK_NEW_PLAN = [{"wuyan":3,"qiyan":3,"ciqu":3},{"wuyan":2,"qiyan":3,"ciqu":3},{"wuyan":0,"qiyan":5,"ciqu":0},{"wuyan":0,"qiyan":3,"ciqu":0},{"wuyan":0,"qiyan":0,"ciqu":0}];
+  MY.EBBINGHAUS_STEPS = [1,2,4,7,15,30];
+})(window.MY = window.MY || {});
+
+
+/* ===== data/pets.js ===== */
+/* 宠物、种子与原版 SVG。
+   内容迁自仓库根目录 index.html，诗句、菜名、数值保持原样。 */
+(function (MY) {
+  'use strict';
+  MY.SEEDS = [
+  {
+    "id": "sunflower",
+    "name": "向日葵",
+    "cost": 50
+  },
+  {
+    "id": "wallnut",
+    "name": "坚果",
+    "cost": 50
+  },
+  {
+    "id": "cherry",
+    "name": "樱桃",
+    "cost": 150
+  }
+];
+  MY.PET_TYPES = [
+  {
+    "id": "dog",
+    "name": "小汪",
+    "cost": 100,
+    "rarity": "normal"
+  },
+  {
+    "id": "cat",
+    "name": "小橘",
+    "cost": 100,
+    "rarity": "normal"
+  },
+  {
+    "id": "bunny",
+    "name": "团团",
+    "cost": 200,
+    "rarity": "rare"
+  },
+  {
+    "id": "fox",
+    "name": "火狐",
+    "cost": 200,
+    "rarity": "rare"
+  },
+  {
+    "id": "panda",
+    "name": "毛毛",
+    "cost": 400,
+    "rarity": "epic"
+  },
+  {
+    "id": "dragon",
+    "name": "小龙",
+    "cost": 800,
+    "rarity": "legend"
+  }
+];
+  MY.RARITY = {
+  "normal": {
+    "l": "普通",
+    "c": "r-normal"
+  },
+  "rare": {
+    "l": "稀有",
+    "c": "r-rare"
+  },
+  "epic": {
+    "l": "史诗",
+    "c": "r-epic"
+  },
+  "legend": {
+    "l": "传说",
+    "c": "r-legend"
+  }
+};
+  
+})(window.MY = window.MY || {});
+
+
+/* ===== data/pet-art.js ===== */
+/* 乐园形象：原创贴纸风，六只同一套五官和金星发卡。不是外部 IP。 */
+(function (MY) {
+  'use strict';
+
+  function eye(cx, cy) {
+    return '<g>' +
+      '<ellipse cx="' + cx + '" cy="' + cy + '" rx="15" ry="17.5" fill="#fff"/>' +
+      '<ellipse cx="' + cx + '" cy="' + (cy + 2) + '" rx="8.2" ry="10.2" fill="#322820"/>' +
+      '<circle cx="' + (cx + 3.5) + '" cy="' + (cy - 5) + '" r="3.3" fill="#fff"/>' +
+      '<circle cx="' + (cx - 2.4) + '" cy="' + (cy + 3.5) + '" r="1.35" fill="#fff" opacity=".9"/>' +
+      '</g>';
+  }
+  function blush(cx, cy) {
+    return '<ellipse cx="' + cx + '" cy="' + cy + '" rx="13" ry="7.5" fill="#ff8fab" opacity=".5"/>';
+  }
+  function shine(cx, cy) {
+    return '<ellipse cx="' + cx + '" cy="' + cy + '" rx="20" ry="11" fill="#fff" opacity=".33" transform="rotate(-32 ' + cx + ' ' + cy + ')"/>';
+  }
+  function star(x, y, r) {
+    var pts = [];
+    for (var i = 0; i < 10; i++) {
+      var ang = -Math.PI / 2 + i * Math.PI / 5;
+      var rad = (i % 2 === 0) ? r : r * 0.42;
+      pts.push((x + Math.cos(ang) * rad).toFixed(1) + ',' + (y + Math.sin(ang) * rad).toFixed(1));
+    }
+    return '<polygon points="' + pts.join(' ') + '" fill="#ffe27a" stroke="#e7a11a" stroke-width="1.3" stroke-linejoin="round"/>';
+  }
+  function stage(tint) {
+    return '<ellipse cx="120" cy="246" rx="64" ry="11" fill="#000" opacity=".22"/>' +
+      '<circle cx="120" cy="136" r="100" fill="' + tint + '" opacity=".2"/>';
+  }
+  function deco(level) {
+    var lv = level || 1;
+    var h = '';
+    if (lv >= 5) h += '<ellipse cx="120" cy="22" rx="34" ry="9" fill="none" stroke="#ffe08a" stroke-width="3" opacity=".9"/>';
+    if (lv >= 3) {
+      h += '<path d="M98 46 L106 26 L114 44 L120 20 L126 44 L134 26 L142 46 L138 54 L102 54 Z" fill="#ffe27a" stroke="#e39b16" stroke-width="1.5" stroke-linejoin="round"/>';
+      h += '<circle cx="120" cy="22" r="2.6" fill="#ff8fab"/>';
+    }
+    return h;
+  }
+  function wrap(level, tint, inner) {
+    return '<svg viewBox="0 0 240 260">' + deco(level) + stage(tint) + inner + '</svg>';
+  }
+
+  function dog(level) {
+    return wrap(level, '#ffd7a8',
+      '<ellipse cx="78" cy="132" rx="22" ry="32" fill="#c9844a" transform="rotate(18 78 132)"/>' +
+      '<ellipse cx="164" cy="118" rx="20" ry="34" fill="#e0a15c" transform="rotate(-16 164 118)"/>' +
+      '<ellipse cx="164" cy="124" rx="11" ry="22" fill="#f3c9a0" transform="rotate(-16 164 124)"/>' +
+      '<ellipse cx="120" cy="196" rx="56" ry="38" fill="#e39a52"/>' +
+      '<ellipse cx="120" cy="206" rx="34" ry="22" fill="#ffe3c4"/>' +
+      '<circle cx="92" cy="214" r="13" fill="#f0b56e"/>' +
+      '<circle cx="148" cy="214" r="13" fill="#f0b56e"/>' +
+      '<path d="M168 188 Q208 176 196 214 Q176 226 162 206" fill="#e39a52"/>' +
+      '<circle cx="120" cy="124" r="60" fill="#f2b56a"/>' +
+      shine(104, 100) +
+      eye(100, 118) + eye(142, 118) +
+      blush(78, 140) + blush(164, 140) +
+      '<ellipse cx="120" cy="148" rx="26" ry="18" fill="#fff1df"/>' +
+      '<ellipse cx="120" cy="142" rx="9" ry="7" fill="#6a463c"/>' +
+      '<path d="M108 156 Q120 166 132 156" fill="none" stroke="#6a463c" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<path d="M114 158 Q120 170 126 158 Q120 166 114 158" fill="#ff8fa3"/>' +
+      star(168, 96, 11)
+    );
+  }
+
+  function cat(level) {
+    return wrap(level, '#ffd0ea',
+      '<path d="M78 78 L92 36 L112 74 Z" fill="#f3a36a"/>' +
+      '<path d="M86 74 L94 48 L106 72 Z" fill="#ffd0dc"/>' +
+      '<path d="M162 78 L148 36 L128 74 Z" fill="#f3a36a"/>' +
+      '<path d="M154 74 L146 48 L134 72 Z" fill="#ffd0dc"/>' +
+      '<ellipse cx="120" cy="198" rx="54" ry="36" fill="#f6b27a"/>' +
+      '<ellipse cx="120" cy="208" rx="32" ry="20" fill="#fff0e4"/>' +
+      '<path d="M162 196 Q214 168 200 124 Q188 156 170 176 Q184 190 162 196" fill="#e8956a"/>' +
+      '<circle cx="120" cy="126" r="58" fill="#f7b27a"/>' +
+      '<path d="M108 92 Q112 80 116 94 M120 88 Q124 74 128 92 M132 92 Q136 80 140 96" fill="none" stroke="#e08a55" stroke-width="3" stroke-linecap="round"/>' +
+      shine(102, 104) +
+      eye(100, 122) + eye(142, 122) +
+      blush(76, 146) + blush(164, 146) +
+      '<ellipse cx="120" cy="150" rx="22" ry="15" fill="#fff3ea"/>' +
+      '<path d="M114 144 L126 144 L120 152 Z" fill="#ff8fa8"/>' +
+      '<path d="M108 156 Q120 164 132 156" fill="none" stroke="#d9896a" stroke-width="2.2" stroke-linecap="round"/>' +
+      '<path d="M70 136 H96 M70 146 H98 M170 136 H144 M170 146 H142" stroke="#fff" stroke-width="1.7" stroke-linecap="round" opacity=".85"/>' +
+      star(150, 58, 10)
+    );
+  }
+
+  function bunny(level) {
+    return wrap(level, '#ffe4f1',
+      '<rect x="86" y="18" width="26" height="78" rx="13" fill="#fff" stroke="#f3d5e2" stroke-width="2"/>' +
+      '<rect x="92" y="30" width="14" height="52" rx="7" fill="#ffb7cb"/>' +
+      '<g transform="rotate(16 148 58)">' +
+      '<rect x="132" y="18" width="26" height="78" rx="13" fill="#fff" stroke="#f3d5e2" stroke-width="2"/>' +
+      '<rect x="138" y="30" width="14" height="52" rx="7" fill="#ffb7cb"/>' +
+      '</g>' +
+      '<ellipse cx="120" cy="202" rx="52" ry="34" fill="#fff"/>' +
+      '<circle cx="168" cy="196" r="14" fill="#fff6fb" stroke="#f6d5e4" stroke-width="2"/>' +
+      '<circle cx="120" cy="132" r="58" fill="#fff"/>' +
+      shine(104, 112) +
+      eye(100, 128) + eye(142, 128) +
+      blush(74, 150) + blush(166, 150) +
+      '<path d="M112 146 L128 146 L120 154 Z" fill="#ff9eb8"/>' +
+      '<rect x="114" y="156" width="5" height="8" rx="2" fill="#fff" stroke="#f0d0dc" stroke-width="1"/>' +
+      '<rect x="121" y="156" width="5" height="8" rx="2" fill="#fff" stroke="#f0d0dc" stroke-width="1"/>' +
+      '<path d="M106 160 Q120 170 134 160" fill="none" stroke="#e7a8ba" stroke-width="2.2" stroke-linecap="round"/>' +
+      star(154, 86, 10)
+    );
+  }
+
+  function fox(level) {
+    return wrap(level, '#ffd0b4',
+      '<path d="M74 96 L96 40 L118 92 Z" fill="#ff8a4a"/>' +
+      '<path d="M84 90 L98 52 L110 88 Z" fill="#ffd3bf"/>' +
+      '<path d="M78 96 L88 62 L96 90 Z" fill="#3a2a28" opacity=".8"/>' +
+      '<path d="M166 96 L144 40 L122 92 Z" fill="#ff8a4a"/>' +
+      '<path d="M156 90 L142 52 L130 88 Z" fill="#ffd3bf"/>' +
+      '<path d="M162 96 L152 62 L144 90 Z" fill="#3a2a28" opacity=".8"/>' +
+      '<ellipse cx="120" cy="200" rx="52" ry="34" fill="#ff8a4a"/>' +
+      '<path d="M150 196 Q214 210 206 154 Q186 186 164 188 Q178 206 150 196" fill="#ff8a4a"/>' +
+      '<path d="M196 160 Q210 150 206 168 Q198 162 196 160" fill="#fff6ee"/>' +
+      '<circle cx="120" cy="128" r="58" fill="#ff9356"/>' +
+      '<path d="M70 146 Q86 176 120 178 Q154 176 170 146 Q150 166 120 166 Q90 166 70 146 Z" fill="#fff6ee"/>' +
+      shine(104, 108) +
+      eye(100, 122) + eye(142, 122) +
+      blush(78, 148) + blush(162, 148) +
+      '<ellipse cx="120" cy="150" rx="8" ry="6" fill="#3a2a28"/>' +
+      '<path d="M108 162 Q120 172 132 162" fill="none" stroke="#3a2a28" stroke-width="2.3" stroke-linecap="round"/>' +
+      star(112, 52, 10)
+    );
+  }
+
+  function panda(level) {
+    return wrap(level, '#e7eef8',
+      '<circle cx="74" cy="86" r="24" fill="#2c2c2c"/>' +
+      '<circle cx="74" cy="86" r="12" fill="#4a4a4a"/>' +
+      '<circle cx="166" cy="86" r="24" fill="#2c2c2c"/>' +
+      '<circle cx="166" cy="86" r="12" fill="#4a4a4a"/>' +
+      '<ellipse cx="120" cy="204" rx="54" ry="34" fill="#2f2f2f"/>' +
+      '<circle cx="88" cy="214" r="14" fill="#2f2f2f"/>' +
+      '<circle cx="152" cy="214" r="14" fill="#2f2f2f"/>' +
+      '<ellipse cx="120" cy="210" rx="28" ry="16" fill="#fff"/>' +
+      '<circle cx="120" cy="128" r="60" fill="#fff"/>' +
+      '<ellipse cx="96" cy="124" rx="18" ry="20" fill="#2c2c2c" transform="rotate(-12 96 124)"/>' +
+      '<ellipse cx="144" cy="124" rx="18" ry="20" fill="#2c2c2c" transform="rotate(12 144 124)"/>' +
+      shine(108, 104) +
+      eye(98, 124) + eye(144, 124) +
+      blush(72, 150) + blush(168, 150) +
+      '<ellipse cx="120" cy="150" rx="10" ry="7" fill="#2c2c2c"/>' +
+      '<path d="M106 162 Q120 174 134 162" fill="none" stroke="#2c2c2c" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<g transform="rotate(18 188 168)">' +
+      '<rect x="176" y="132" width="10" height="52" rx="5" fill="#57b25e"/>' +
+      '<rect x="176" y="148" width="10" height="4" fill="#3e8c46"/>' +
+      '<path d="M176 138 Q196 124 190 146 Q180 142 176 138" fill="#8ed98a"/>' +
+      '</g>' +
+      star(150, 70, 10)
+    );
+  }
+
+  function dragon(level) {
+    return wrap(level, '#d9fff4',
+      '<path d="M46 150 Q24 112 52 96 Q40 124 62 140 Q50 150 46 150" fill="#b7efe4" opacity=".95"/>' +
+      '<path d="M194 150 Q216 112 188 96 Q200 124 178 140 Q190 150 194 150" fill="#b7efe4" opacity=".95"/>' +
+      '<path d="M158 206 Q210 196 202 156 L188 168 Q196 188 164 198 Z" fill="#5ecfb4"/>' +
+      '<path d="M200 156 L214 146 L208 168 Z" fill="#ffe27a"/>' +
+      '<ellipse cx="120" cy="202" rx="52" ry="34" fill="#6fd8bf"/>' +
+      '<ellipse cx="120" cy="210" rx="30" ry="18" fill="#e8fff8"/>' +
+      '<path d="M96 70 L108 40 L118 72 Z" fill="#ffe27a" stroke="#e7a11a" stroke-width="1.4"/>' +
+      '<path d="M144 70 L132 40 L122 72 Z" fill="#ffe27a" stroke="#e7a11a" stroke-width="1.4"/>' +
+      '<circle cx="120" cy="128" r="58" fill="#7ee0c6"/>' +
+      shine(104, 108) +
+      eye(100, 122) + eye(142, 122) +
+      blush(76, 148) + blush(164, 148) +
+      '<ellipse cx="120" cy="156" rx="24" ry="16" fill="#e7fff8"/>' +
+      '<circle cx="112" cy="152" r="3" fill="#2f8f78"/>' +
+      '<circle cx="128" cy="152" r="3" fill="#2f8f78"/>' +
+      '<path d="M104 166 Q120 180 136 166" fill="none" stroke="#2f8f78" stroke-width="2.6" stroke-linecap="round"/>' +
+      star(168, 92, 10)
+    );
+  }
+
+  var DRAW = { dog: dog, cat: cat, bunny: bunny, fox: fox, panda: panda, dragon: dragon };
+
+  MY.petSVG = function (type, level) {
+    var fn = DRAW[type] || DRAW.panda;
+    return fn(level || 1);
+  };
+
+  function petals(cx, cy, n, rx, ry, fill) {
+    var h = '';
+    for (var i = 0; i < n; i++) {
+      var a = (i / n) * Math.PI * 2;
+      var x = cx + Math.cos(a) * 14;
+      var y = cy + Math.sin(a) * 14;
+      h += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="' + rx + '" ry="' + ry + '" fill="' + fill + '" transform="rotate(' + Math.round(a * 180 / Math.PI) + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ')"/>';
+    }
+    return h;
+  }
+
+  MY.plantSVG = function (type) {
+    if (type === 'sunflower') {
+      return '<svg viewBox="0 0 80 96">' +
+        '<rect x="37" y="50" width="6" height="36" rx="3" fill="#3d8f45"/>' +
+        '<ellipse cx="26" cy="68" rx="12" ry="6" fill="#4caf50" transform="rotate(-32 26 68)"/>' +
+        '<ellipse cx="56" cy="64" rx="12" ry="6" fill="#66bb6a" transform="rotate(28 56 64)"/>' +
+        petals(40, 34, 12, 7, 13, '#ffd54a') +
+        '<circle cx="40" cy="34" r="12" fill="#f6a21a"/>' +
+        '<circle cx="40" cy="34" r="8" fill="#c47b12"/>' +
+        '<circle cx="37" cy="31" r="2.2" fill="#ffe7a3"/>' +
+        '</svg>';
+    }
+    if (type === 'wallnut') {
+      return '<svg viewBox="0 0 80 96">' +
+        '<ellipse cx="40" cy="78" rx="16" ry="5" fill="#000" opacity=".12"/>' +
+        '<ellipse cx="40" cy="52" rx="24" ry="28" fill="#c4a484"/>' +
+        '<ellipse cx="40" cy="50" rx="18" ry="22" fill="#a98462"/>' +
+        '<ellipse cx="32" cy="40" rx="8" ry="5" fill="#fff" opacity=".28" transform="rotate(-20 32 40)"/>' +
+        '<circle cx="32" cy="48" r="3.2" fill="#3e342c"/>' +
+        '<circle cx="48" cy="48" r="3.2" fill="#3e342c"/>' +
+        '<circle cx="33" cy="47" r="1.1" fill="#fff"/>' +
+        '<circle cx="49" cy="47" r="1.1" fill="#fff"/>' +
+        '<path d="M34 58 Q40 63 46 58" fill="none" stroke="#5c4636" stroke-width="2" stroke-linecap="round"/>' +
+        '<ellipse cx="28" cy="56" rx="5" ry="3" fill="#e7b2a4" opacity=".45"/>' +
+        '<ellipse cx="52" cy="56" rx="5" ry="3" fill="#e7b2a4" opacity=".45"/>' +
+        '<path d="M40 24 Q48 16 44 28" fill="#67b36a"/>' +
+        '</svg>';
+    }
+    if (type === 'cherry') {
+      return '<svg viewBox="0 0 80 96">' +
+        '<path d="M40 28 C40 18 52 14 56 22" fill="none" stroke="#3d8f45" stroke-width="2.4" stroke-linecap="round"/>' +
+        '<path d="M40 36 C34 18 22 20 28 30" fill="none" stroke="#3d8f45" stroke-width="2.4" stroke-linecap="round"/>' +
+        '<ellipse cx="58" cy="18" rx="8" ry="4" fill="#66bb6a" transform="rotate(30 58 18)"/>' +
+        '<circle cx="28" cy="62" r="16" fill="#ef5350"/>' +
+        '<circle cx="50" cy="66" r="16" fill="#e53935"/>' +
+        '<ellipse cx="22" cy="56" rx="5" ry="3" fill="#fff" opacity=".55" transform="rotate(-30 22 56)"/>' +
+        '<ellipse cx="44" cy="60" rx="5" ry="3" fill="#fff" opacity=".5" transform="rotate(-24 44 60)"/>' +
+        '<path d="M22 66 Q28 70 32 66" fill="none" stroke="#b71c1c" stroke-width="1.4" stroke-linecap="round" opacity=".7"/>' +
+        '</svg>';
+    }
+    return '';
+  };
+})(window.MY = window.MY || {});
+
+
+/* ===== data/life.js ===== */
+/* 人生系统文案。迁自 index.html 的牧橒人生系统，不改句子。 */
+(function (MY) {
+  'use strict';
+
+  MY.YL = {
+    baji: ['life', '身体是设计师的本钱，拳头硬，腰杆才能硬'],
+    homework: ['learn', '把该做的事做扎实，是设计师的基本功'],
+    zaodu: ['learn', '古诗背进心里，审美就多一分底蕴'],
+    wandu: ['learn', '复习是设计师的校对环节'],
+    reading: ['learn', '读得多，脑子里的素材库才够大'],
+    reading2: ['learn', '课外阅读在给灵感施肥'],
+    oral: ['learn', '数字准，设计才不失真'],
+    baicixuan: ['learn', '单词是设计师看世界的窗户'],
+    dictation: ['learn', '字写对，想法才传得准'],
+    handwriting: ['learn', '手稳，画稿才稳'],
+    thinking: ['drive', '会拆解问题，是设计师的核心能力'],
+    dino: ['drive', '每天打卡不断线，设计师靠积累'],
+    teacher: ['drive', '能讲明白才是真学会——设计师要会表达']
+  };
+
+  MY.YL_NAME = { life: '生命力', drive: '内驱力', learn: '学习力' };
+  MY.YL_COLOR = { life: '#52e0a8', drive: '#ff7ac8', learn: '#3ee6ff' };
+
+  MY.CHEER = [
+    '没完成不代表失败，只代表今天先到这里。设计师也会改稿，改完更好看。',
+    '梦想不是一天画完的。今天没画的部分，明天接着画，线条会更稳。',
+    '元力不会清零，它只是今天攒得慢一点。喝口水，明天继续。',
+    '今天的留白，是给明天留的位置。设计师都懂：留白也是设计。',
+    '累了就歇，歇完再画。人生设计师从不把自己逼成加班机器。'
+  ];
+
+  MY.WF_STEPS = [
+    { k: 'meet', n: '遇到难题', tip: '把难的事写下来，它就一半小了', c: 5 },
+    { k: 'split', n: '拆解', tip: '拆成一步步，每步都能动手', c: 10 },
+    { k: 'do', n: '执行', tip: '做了哪一步？写下来', c: 10 },
+    { k: 'check', n: '校验', tip: '对照结果，哪里对哪里错', c: 10 },
+    { k: 'keep', n: '沉淀', tip: '写成一张经验卡，下次直接用', c: 15 }
+  ];
+
+  MY.DECLARATION = '我是陈牧橒，人生设计师。\n我不只想设计房子和衣服，\n我要设计我自己的人生——\n设计今天做什么，遇到难题怎么走，明天成为谁。\n每天攒一点元力：\n生命力让我有劲儿，内驱力让我想学，学习力让我会学。\n我的人生，我自己画。';
+})(window.MY = window.MY || {});
+
+
+/* ===== store.js ===== */
+/* 主进度：localStorage 键名保持 muyang_v6。只补字段，不删旧字段。 */
+(function (MY) {
+  'use strict';
+
+  var KEY = 'muyang_v6';
+  MY.STORAGE_KEYS = [KEY, 'gushi337_v2', 'gushi337_v1'];
+  MY.storageOk = true;
+
+  function markStorage(err) {
+    MY.storageOk = false;
+    MY.storageError = err || MY.storageError || null;
+  }
+  function storageGet(key) {
+    try {
+      if (!window.localStorage) { markStorage(); return null; }
+      return window.localStorage.getItem(key);
+    } catch (err) { markStorage(err); return null; }
+  }
+  function storageSet(key, value) {
+    try {
+      if (!window.localStorage) { markStorage(); return false; }
+      window.localStorage.setItem(key, value);
+      return true;
+    } catch (err) { markStorage(err); return false; }
+  }
+  MY.storageGet = storageGet;
+  MY.storageSet = storageSet;
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  MY.pad = pad;
+  MY.ymd = function (d) {
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  };
+  MY.esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  };
+  function nl(s) { return MY.esc(s).replace(/\n/g, '<br>'); }
+  MY.nl = nl;
+
+  function todayStamp() { return new Date().toDateString(); }
+
+  function defaultSystem() {
+    var t = MY.ymd(new Date());
+    return {
+      version: 'v1.0',
+      vnum: 1,
+      mainline: {
+        title: '人生设计师',
+        declaration: MY.DECLARATION,
+        since: t
+      },
+      rules: [
+        { id: 'r1', text: '先做完，再玩', by: '陈咏', date: t, draft: true },
+        { id: 'r2', text: '今天的事今天完成', by: '陈咏', date: t, draft: true },
+        { id: 'r3', text: '不会的先自己想 3 分钟', by: '陈咏', date: t, draft: true }
+      ],
+      dailyNotes: {},
+      reviews: [],
+      patches: [{ v: 'v1.0', date: t, note: '人生系统安装完成，主线确立：人生设计师' }],
+      cards: [],
+      workflow: null,
+      yuanli: { life: 0, drive: 0, learn: 0 },
+      sound: true,
+      flags: {}
+    };
+  }
+  MY.defaultSystem = defaultSystem;
+
+  function defaultState() {
+    var today = todayStamp();
+    return {
+      coins: 100,
+      tasks: {},
+      feast: [],
+      logs: [],
+      ownedPets: [],
+      activePet: null,
+      homePet: '',
+      petData: {},
+      lawn: new Array(15).fill(null),
+      selectedSeed: null,
+      lastDate: today,
+      confirmed: false,
+      streak: 1,
+      lastStreakDate: today
+    };
+  }
+
+  function ensureSystem(s) {
+    var d = defaultSystem();
+    var changed = false;
+    if (!s.system || typeof s.system !== 'object' || Array.isArray(s.system)) {
+      s.system = d;
+      return true;
+    }
+    var sys = s.system;
+    ['version', 'vnum', 'mainline', 'rules', 'dailyNotes', 'reviews', 'patches', 'cards', 'workflow', 'yuanli', 'sound', 'flags'].forEach(function (k) {
+      if (sys[k] === undefined) { sys[k] = d[k]; changed = true; }
+    });
+    if (!sys.mainline || typeof sys.mainline !== 'object' || Array.isArray(sys.mainline)) {
+      sys.mainline = d.mainline; changed = true;
+    } else if (!sys.mainline.declaration) {
+      sys.mainline.declaration = d.mainline.declaration; changed = true;
+    }
+    if (!Array.isArray(sys.rules)) { sys.rules = d.rules; changed = true; }
+    if (!sys.dailyNotes || typeof sys.dailyNotes !== 'object' || Array.isArray(sys.dailyNotes)) {
+      sys.dailyNotes = {}; changed = true;
+    }
+    if (!Array.isArray(sys.reviews)) { sys.reviews = []; changed = true; }
+    if (!Array.isArray(sys.patches)) { sys.patches = d.patches; changed = true; }
+    if (!Array.isArray(sys.cards)) { sys.cards = []; changed = true; }
+    if (!sys.flags || typeof sys.flags !== 'object' || Array.isArray(sys.flags)) {
+      sys.flags = {}; changed = true;
+    }
+    if (!sys.yuanli || typeof sys.yuanli !== 'object' || Array.isArray(sys.yuanli)) {
+      sys.yuanli = { life: 0, drive: 0, learn: 0 }; changed = true;
+    } else {
+      ['life', 'drive', 'learn'].forEach(function (k) {
+        if (typeof sys.yuanli[k] !== 'number') { sys.yuanli[k] = 0; changed = true; }
+      });
+    }
+    return changed;
+  }
+
+  function save() {
+    storageSet(KEY, JSON.stringify(MY.state));
+  }
+  MY.save = save;
+
+  function load() {
+    var s = null;
+    var dirty = false;
+    try {
+      var raw = storageGet(KEY);
+      if (raw) s = JSON.parse(raw);
+    } catch (e) { s = null; }
+    if (!s || typeof s !== 'object' || Array.isArray(s)) {
+      s = defaultState();
+      dirty = true;
+    }
+    var today = todayStamp();
+    if (s.lastDate !== today) {
+      if (!s.dayArchive || typeof s.dayArchive !== 'object' || Array.isArray(s.dayArchive)) s.dayArchive = {};
+      var archiveKey = s.lastDate || 'earlier';
+      if (!s.dayArchive[archiveKey]) {
+        s.dayArchive[archiveKey] = {
+          tasks: (s.tasks && typeof s.tasks === 'object' && !Array.isArray(s.tasks)) ? s.tasks : {},
+          feast: Array.isArray(s.feast) ? s.feast.slice() : [],
+          confirmed: !!s.confirmed
+        };
+      }
+      if (!Array.isArray(s.logs)) s.logs = [];
+      s.tasks = {};
+      s.feast = [];
+      s.confirmed = false;
+      if (s.lastStreakDate && Math.round((new Date(today) - new Date(s.lastStreakDate)) / 86400000) === 1) {
+        s.streak = (s.streak || 1) + 1;
+      } else {
+        s.streak = 1;
+      }
+      s.lastStreakDate = today;
+      s.lastDate = today;
+      dirty = true;
+    }
+    if (ensureSystem(s)) dirty = true;
+    MY.state = s;
+    if (dirty) save();
+    return s;
+  }
+  MY.reloadState = load;
+
+  function coins() {
+    var n = MY.state && MY.state.coins;
+    return (typeof n === 'number' && isFinite(n)) ? n : 0;
+  }
+  MY.coins = coins;
+
+  function taskMap() {
+    var t = MY.state && MY.state.tasks;
+    return (t && typeof t === 'object' && !Array.isArray(t)) ? t : {};
+  }
+  MY.taskMap = taskMap;
+
+  function feastList() {
+    return (MY.state && Array.isArray(MY.state.feast)) ? MY.state.feast : [];
+  }
+  MY.feastList = feastList;
+
+  function logs() {
+    return (MY.state && Array.isArray(MY.state.logs)) ? MY.state.logs : [];
+  }
+  MY.logs = logs;
+
+  function addLog(text) {
+    if (!Array.isArray(MY.state.logs)) MY.state.logs = [];
+    var now = new Date();
+    var time = pad(now.getMonth() + 1) + '/' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+    MY.state.logs.unshift({ time: time, text: text });
+    if (MY.state.logs.length > 50) MY.state.logs.pop();
+  }
+  MY.addLog = addLog;
+
+  function getPetData(id) {
+    if (!MY.state.petData || typeof MY.state.petData !== 'object' || Array.isArray(MY.state.petData)) MY.state.petData = {};
+    if (!MY.state.petData[id] || typeof MY.state.petData[id] !== 'object' || Array.isArray(MY.state.petData[id])) {
+      MY.state.petData[id] = { level: 1, exp: 0, hunger: 80, happiness: 80 };
+    }
+    var pd = MY.state.petData[id];
+    if (typeof pd.level !== 'number') pd.level = 1;
+    if (typeof pd.exp !== 'number') pd.exp = 0;
+    if (typeof pd.hunger !== 'number') pd.hunger = 80;
+    if (typeof pd.happiness !== 'number') pd.happiness = 80;
+    return pd;
+  }
+  MY.getPetData = getPetData;
+
+  function expNeed(lv) { return (lv || 1) * 50; }
+  MY.expNeed = expNeed;
+
+  function levelUpCheck(id) {
+    var pd = MY.state.petData && MY.state.petData[id];
+    if (!pd) return 0;
+    var pet = MY.PET_TYPES.filter(function (p) { return p.id === id; })[0];
+    var gained = 0;
+    var guard = 0;
+    while (pd.exp >= expNeed(pd.level) && guard < 40) {
+      pd.exp -= expNeed(pd.level);
+      pd.level += 1;
+      gained += 1;
+      guard += 1;
+      addLog((pet ? pet.name : '宠物') + '升到' + pd.level + '级！');
+      pd.hunger = 100;
+      pd.happiness = 100;
+    }
+    return gained;
+  }
+  MY.levelUpCheck = levelUpCheck;
+
+  function todayNote() {
+    ensureSystem(MY.state);
+    var t = MY.ymd(new Date());
+    if (!MY.state.system.dailyNotes[t] || typeof MY.state.system.dailyNotes[t] !== 'object') {
+      MY.state.system.dailyNotes[t] = { done: [], missed: [], cheer: '', yuanli: { life: 0, drive: 0, learn: 0 }, link: '', ts: '' };
+    }
+    return MY.state.system.dailyNotes[t];
+  }
+  MY.todayNote = todayNote;
+
+  function completeTask(id) {
+    var task = MY.taskById(id);
+    if (!task) return { ok: false };
+    if (!MY.state.tasks || typeof MY.state.tasks !== 'object' || Array.isArray(MY.state.tasks)) MY.state.tasks = {};
+    if (MY.state.tasks[id]) return { ok: false, already: true, task: task };
+    MY.state.tasks[id] = true;
+    MY.state.coins = coins() + task.reward;
+    addLog('完成「' + task.name + '」(' + task.dish + ') +' + task.reward + '阳光');
+    var levels = 0;
+    if (MY.state.activePet) {
+      var pd = getPetData(MY.state.activePet);
+      pd.exp += 10;
+      levels = levelUpCheck(MY.state.activePet);
+    }
+    if (Array.isArray(MY.state.feast)) {
+      var fi = MY.state.feast.indexOf(id);
+      if (fi >= 0) MY.state.feast.splice(fi, 1);
+    }
+    ensureSystem(MY.state);
+    var map = MY.YL[id];
+    if (map) {
+      MY.state.system.yuanli[map[0]] += 1;
+      var note = todayNote();
+      if (!Array.isArray(note.done)) note.done = [];
+      if (note.done.indexOf(id) < 0) note.done.push(id);
+    }
+    save();
+    return { ok: true, task: task, yl: map ? map[0] : null, levels: levels };
+  }
+  MY.completeTask = completeTask;
+
+  function age(now) {
+    now = now || new Date();
+    var b = MY.BIRTHDAY;
+    var y = now.getFullYear() - b.getFullYear();
+    var m = now.getMonth() - b.getMonth();
+    var d = now.getDate() - b.getDate();
+    if (d < 0) {
+      m -= 1;
+      d += new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+    }
+    if (m < 0) { y -= 1; m += 12; }
+    return { years: y, months: m, days: d, totalDays: Math.floor((now - b) / 86400000) };
+  }
+  MY.age = age;
+
+  function radarVals() {
+    var done = MY.ALL_TASKS.filter(function (t) { return !!taskMap()[t.id]; }).length;
+    var base = 40 + done * 4;
+    var petLv = MY.state.activePet ? getPetData(MY.state.activePet).level : 0;
+    return MY.CORE_ATTRS.map(function (a) {
+      var v = base;
+      a.tasks.forEach(function (id) { if (taskMap()[id]) v += 5; });
+      if (MY.state.activePet) v += petLv * 1.5;
+      return Math.min(95, Math.round(v));
+    });
+  }
+  MY.radarVals = radarVals;
+
+  function petById(id) {
+    return MY.PET_TYPES.filter(function (p) { return p.id === id; })[0] || null;
+  }
+  MY.petById = petById;
+
+  function onShop(pid) {
+    var pet = petById(pid);
+    if (!pet) return { ok: false };
+    if (!Array.isArray(MY.state.ownedPets)) MY.state.ownedPets = [];
+    if (MY.state.ownedPets.indexOf(pid) >= 0) {
+      MY.state.activePet = pid;
+      save();
+      return { ok: true, switched: true, pet: pet };
+    }
+    if (coins() < pet.cost) return { ok: false, need: pet.cost - coins(), pet: pet };
+    MY.state.coins = coins() - pet.cost;
+    MY.state.ownedPets.push(pid);
+    getPetData(pid);
+    MY.state.activePet = pid;
+    addLog('领养了' + pet.name);
+    save();
+    return { ok: true, bought: true, pet: pet };
+  }
+  MY.onShop = onShop;
+
+  function feedPet() {
+    if (!MY.state.activePet) return { ok: false, reason: 'nopet' };
+    if (coins() < 10) return { ok: false, need: 10 - coins() };
+    MY.state.coins = coins() - 10;
+    var pd = getPetData(MY.state.activePet);
+    pd.hunger = Math.min(100, pd.hunger + 25);
+    pd.exp += 5;
+    var levels = levelUpCheck(MY.state.activePet);
+    addLog('喂了' + (petById(MY.state.activePet) || {}).name);
+    save();
+    return { ok: true, levels: levels, pet: petById(MY.state.activePet) };
+  }
+  MY.feedPet = feedPet;
+
+  function playPet() {
+    if (!MY.state.activePet) return { ok: false, reason: 'nopet' };
+    if (coins() < 15) return { ok: false, need: 15 - coins() };
+    MY.state.coins = coins() - 15;
+    var pd = getPetData(MY.state.activePet);
+    pd.happiness = Math.min(100, pd.happiness + 25);
+    pd.exp += 8;
+    var levels = levelUpCheck(MY.state.activePet);
+    addLog('陪' + (petById(MY.state.activePet) || {}).name + '玩了一会儿');
+    save();
+    return { ok: true, levels: levels, pet: petById(MY.state.activePet) };
+  }
+  MY.playPet = playPet;
+
+  function selectSeed(idx) {
+    var seed = MY.SEEDS[idx];
+    if (!seed) return { ok: false };
+    if (coins() < seed.cost) return { ok: false, need: seed.cost - coins(), seed: seed };
+    MY.state.selectedSeed = MY.state.selectedSeed === idx ? null : idx;
+    save();
+    return { ok: true, seed: seed };
+  }
+  MY.selectSeed = selectSeed;
+
+  function plantAt(i) {
+    var idx = MY.state.selectedSeed;
+    if (idx == null) return { ok: false, reason: 'noseed' };
+    var seed = MY.SEEDS[idx];
+    if (!seed) return { ok: false, reason: 'noseed' };
+    if (!Array.isArray(MY.state.lawn)) MY.state.lawn = [];
+    if (MY.state.lawn[i]) return { ok: false, reason: 'occupied' };
+    if (coins() < seed.cost) return { ok: false, need: seed.cost - coins(), seed: seed };
+    while (MY.state.lawn.length < 15) MY.state.lawn.push(null);
+    MY.state.coins = coins() - seed.cost;
+    MY.state.lawn[i] = { type: seed.id };
+    MY.state.selectedSeed = null;
+    addLog('种下了' + seed.name);
+    save();
+    return { ok: true, seed: seed };
+  }
+  MY.plantAt = plantAt;
+
+  function asObject(val) {
+    if (typeof val === 'string') val = JSON.parse(val);
+    if (!val || typeof val !== 'object' || Array.isArray(val)) return null;
+    return val;
+  }
+
+  function exportArchive() {
+    save();
+    if (MY.gushi && MY.gushi.persist) MY.gushi.persist();
+    var out = { format: 'muyun-archive-v1', exportedAt: new Date().toISOString() };
+    if (MY.state) {
+      try { out[KEY] = JSON.parse(JSON.stringify(MY.state)); } catch (e) { out[KEY] = MY.state; }
+    }
+    if (MY.gushi && MY.gushi.snapshot) {
+      try { out.gushi337_v2 = JSON.parse(JSON.stringify(MY.gushi.snapshot())); } catch (e) {}
+    }
+    MY.STORAGE_KEYS.forEach(function (k) {
+      if (out[k] != null) return;
+      var raw = storageGet(k);
+      if (raw == null) return;
+      try { out[k] = JSON.parse(raw); }
+      catch (e) { out[k + '_raw'] = raw; }
+    });
+    return out;
+  }
+  MY.exportArchive = exportArchive;
+
+  function importArchive(obj) {
+    obj = asObject(obj);
+    if (!obj) throw new Error('bad');
+    var bag = {};
+    if (asObject(obj.muyang_v6)) bag[KEY] = asObject(obj.muyang_v6);
+    if (asObject(obj.gushi337_v2)) bag.gushi337_v2 = asObject(obj.gushi337_v2);
+    if (asObject(obj.gushi337_v1)) bag.gushi337_v1 = asObject(obj.gushi337_v1);
+    if (!bag[KEY] && obj.s && typeof obj.s === 'object' && !Array.isArray(obj.s) && (obj.s.coins != null || obj.s.tasks || obj.s.logs)) {
+      bag[KEY] = obj.s;
+    }
+    var looksMain = obj.coins != null || obj.tasks || obj.lawn || obj.ownedPets || obj.petData;
+    if (!bag[KEY] && looksMain && !obj.poems) bag[KEY] = obj;
+    if (!bag.gushi337_v2 && obj.poems && typeof obj.poems === 'object' && (obj.ver != null || obj.days || obj.xp != null)) {
+      bag.gushi337_v2 = obj;
+    }
+    var keys = Object.keys(bag);
+    if (!keys.length) throw new Error('empty');
+    var wrote = 0;
+    keys.forEach(function (k) {
+      if (storageSet(k, JSON.stringify(bag[k]))) wrote += 1;
+    });
+    if (!wrote) throw new Error('存档认出来了，但这台浏览器没有把它写进去');
+    load();
+    if (MY.gushi && MY.gushi.reload) MY.gushi.reload();
+    return MY.state;
+  }
+  MY.importArchive = importArchive;
+
+  function tone(freq, dur, gain) {
+    if (MY.state && MY.state.system && MY.state.system.sound === false) return;
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      var ctx = tone.ac || (tone.ac = new Ctx());
+      if (ctx.state === 'suspended') ctx.resume();
+      var o = ctx.createOscillator();
+      var g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(gain || 0.12, ctx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (dur || 0.14));
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + (dur || 0.14) + 0.02);
+    } catch (e) { /* 没有音频也不挡住 */ }
+  }
+  MY.tone = tone;
+  MY.ding = function () {
+    tone(988, 0.14, 0.14);
+    setTimeout(function () { tone(1319, 0.22, 0.11); }, 120);
+  };
+
+  load();
+})(window.MY = window.MY || {});
+
+
+/* ===== gushi.js ===== */
+/* gushi-337：键名 gushi337_v2，没有 v2 时读 gushi337_v1。排程、计分与原引擎一致。 */
+(function (MY) {
+  'use strict';
+
+  var KEY = 'gushi337_v2';
+  var KEY1 = 'gushi337_v1';
+  var PUNCT = /[，。、？！；：""''《》·,!?;:"'\s]/g;
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function today() { return ymd(new Date()); }
+  function addDays(s, n) {
+    var d = new Date(s + 'T00:00:00');
+    d.setDate(d.getDate() + n);
+    return ymd(d);
+  }
+  function diffDays(a, b) {
+    return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 864e5);
+  }
+  function rnd(n) { return Math.floor(Math.random() * n); }
+  function shuffle(a) {
+    a = a.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = rnd(i + 1);
+      var t = a[i];
+      a[i] = a[j];
+      a[j] = t;
+    }
+    return a;
+  }
+  function plain(s) { return String(s == null ? '' : s).replace(PUNCT, ''); }
+
+  function blank() {
+    return { ver: 2, start: today(), xp: 0, poems: {}, days: {}, badges: [], plan: null, sound: true };
+  }
+
+  var state = null;
+
+  function load() {
+    var base = blank();
+    try {
+      var raw = (MY.storageGet ? MY.storageGet(KEY) : localStorage.getItem(KEY));
+      if (!raw) {
+        var old = (MY.storageGet ? MY.storageGet(KEY1) : localStorage.getItem(KEY1));
+        if (old) return Object.assign(base, JSON.parse(old));
+        return base;
+      }
+      return Object.assign(base, JSON.parse(raw));
+    } catch (e) { return base; }
+  }
+  function persist() {
+    try {
+      var json = JSON.stringify(state);
+      if (MY.storageSet) MY.storageSet(KEY, json);
+      else localStorage.setItem(KEY, json);
+    } catch (e) {}
+  }
+  function reload() {
+    state = load();
+    return state;
+  }
+  state = load();
+
+  function byId(id) {
+    return MY.POEMS.filter(function (p) { return p.id === +id; })[0] || null;
+  }
+  function P(id) {
+    if (!state.poems || typeof state.poems !== 'object' || Array.isArray(state.poems)) state.poems = {};
+    var k = 'p' + id;
+    if (!state.poems[k] || typeof state.poems[k] !== 'object' || Array.isArray(state.poems[k])) {
+      state.poems[k] = { reads: 0, days: [], stage: -1, due: null, last: null, best: 0, tests: 0, mastered: false };
+    }
+    var p = state.poems[k];
+    if (typeof p.reads !== 'number') p.reads = 0;
+    if (!Array.isArray(p.days)) p.days = [];
+    if (typeof p.stage !== 'number') p.stage = -1;
+    if (p.due === undefined) p.due = null;
+    if (p.last === undefined) p.last = null;
+    if (typeof p.best !== 'number') p.best = 0;
+    if (typeof p.tests !== 'number') p.tests = 0;
+    if (typeof p.mastered !== 'boolean') p.mastered = false;
+    return p;
+  }
+  function day(date) {
+    if (!state.days || typeof state.days !== 'object' || Array.isArray(state.days)) state.days = {};
+    var d = date || today();
+    if (!state.days[d] || typeof state.days[d] !== 'object') {
+      state.days[d] = { reads: 0, tests: 0, xp: 0, ok: 0, done: false, hit: 0, acc: 0, total: 0, mid: 0, no: 0 };
+    }
+    return state.days[d];
+  }
+  function dayIndex() {
+    if (!state.start) state.start = today();
+    return Math.max(1, diffDays(state.start, today()) + 1);
+  }
+  function weekOf(d) { return Math.min(4, Math.floor((d - 1) / 7)); }
+
+  function buildPlan() {
+    var pool = { wuyan: [], qiyan: [], ciqu: [] };
+    MY.POEMS.forEach(function (p) { if (pool[p.genre]) pool[p.genre].push(p.id); });
+    var ptr = { wuyan: 0, qiyan: 0, ciqu: 0 };
+    var weeks = MY.WEEK_NEW_PLAN.map(function (q) {
+      var ids = [];
+      ['wuyan', 'qiyan', 'ciqu'].forEach(function (g) {
+        for (var i = 0; i < q[g]; i++) {
+          if (ptr[g] < pool[g].length) ids.push(pool[g][ptr[g]++]);
+        }
+      });
+      return ids;
+    });
+    return { weeks: weeks, built: today() };
+  }
+  function getPlan() {
+    if (!state.plan || !state.plan.weeks) { state.plan = buildPlan(); persist(); }
+    return state.plan;
+  }
+  function todayList() {
+    var d = dayIndex();
+    var w = weekOf(d);
+    var weeks = getPlan().weeks || [];
+    var ids = (weeks[w] || []).slice();
+    var need = 9 - ids.length;
+    if (need > 0) {
+      var cand = MY.POEMS.filter(function (p) { return ids.indexOf(p.id) < 0 && P(p.id).stage >= 0; });
+      cand.sort(function (a, b) {
+        var A = P(a.id), B = P(b.id);
+        if (A.due !== B.due) return String(A.due).localeCompare(String(B.due));
+        return A.best - B.best;
+      });
+      for (var i = 0; i < Math.min(need, cand.length); i++) ids.push(cand[i].id);
+    }
+    return ids;
+  }
+  function dueList() {
+    var t = today();
+    return MY.POEMS.filter(function (p) {
+      var s = P(p.id);
+      return s.stage >= 0 && s.due && s.due <= t && s.last !== t;
+    }).sort(function (a, b) {
+      var A = P(a.id), B = P(b.id);
+      var ua = A.stage >= 3 ? 0 : 1, ub = B.stage >= 3 ? 0 : 1;
+      if (ua !== ub) return ua - ub;
+      if (A.due !== B.due) return String(A.due).localeCompare(String(B.due));
+      return A.best - B.best;
+    });
+  }
+  function deckToday() {
+    var set = todayList();
+    dueList().forEach(function (p) {
+      if (set.indexOf(p.id) < 0 && set.length < 12) set.push(p.id);
+    });
+    set.sort(function (a, b) { return byId(a).level - byId(b).level; });
+    return set;
+  }
+
+  var RANKS = ['蒙童', '学子', '秀才', '举人', '贡士', '进士', '翰林', '诗魁', '诗仙'];
+  function rank() { return RANKS[Math.min(RANKS.length - 1, Math.floor((state.xp || 0) / 120))]; }
+  function addXp(n) { state.xp = (state.xp || 0) + n; day().xp = (day().xp || 0) + n; }
+  function masteredCount() {
+    return MY.POEMS.filter(function (p) { return !!P(p.id).mastered; }).length;
+  }
+  function streak() {
+    var n = 0;
+    var cur = today();
+    if (!state.days || !state.days[cur] || !(state.days[cur].reads || state.days[cur].tests)) cur = addDays(cur, -1);
+    while (state.days && state.days[cur] && (state.days[cur].reads || state.days[cur].tests)) {
+      n += 1;
+      cur = addDays(cur, -1);
+    }
+    return n;
+  }
+
+  var BADGES = [
+    { id: 'first', nm: '开卷第一读', ok: function () { return MY.POEMS.some(function (p) { return P(p.id).reads > 0; }); } },
+    { id: 's3', nm: '三日不辍', ok: function () { return streak() >= 3; } },
+    { id: 's7', nm: '七日成诵', ok: function () { return MY.POEMS.some(function (p) { return P(p.id).days.length >= 7; }); } },
+    { id: 'full', nm: '一字不差', ok: function () { return MY.POEMS.some(function (p) { return P(p.id).best === 100; }); } },
+    { id: 'm5', nm: '掌握 5 篇', ok: function () { return masteredCount() >= 5; } },
+    { id: 'm13', nm: '掌握 13 篇', ok: function () { return masteredCount() >= 13; } },
+    { id: 'm25', nm: '25 篇全通', ok: function () { return masteredCount() >= 25; } },
+    { id: 'cut8', nm: '单日斩 8 首', ok: function () { return Object.keys(state.days || {}).some(function (k) { return (state.days[k].hit || 0) >= 8; }); } },
+    { id: 'read100', nm: '朗读满 100 遍', ok: function () { return MY.POEMS.reduce(function (a, p) { return a + P(p.id).reads; }, 0) >= 100; } },
+    { id: 'xp600', nm: '进士及第', ok: function () { return (state.xp || 0) >= 600; } }
+  ];
+  function checkBadges() {
+    if (!Array.isArray(state.badges)) state.badges = [];
+    var got = [];
+    BADGES.forEach(function (b) {
+      if (state.badges.indexOf(b.id) < 0 && b.ok()) { state.badges.push(b.id); got.push(b); }
+    });
+    if (got.length) persist();
+    return got;
+  }
+
+  function markRead(id) {
+    var p = P(id);
+    var t = today();
+    p.reads += 1;
+    if (p.days.indexOf(t) < 0) p.days.push(t);
+    if (p.stage < 0) { p.stage = 0; p.due = t; p.last = null; }
+    day().reads = (day().reads || 0) + 1;
+    addXp(2);
+    persist();
+    return { record: p, badges: checkBadges() };
+  }
+
+  function grade(id, score) {
+    var p = P(id);
+    var t = today();
+    p.tests += 1;
+    p.best = Math.max(p.best, score);
+    if (p.stage < 0) p.stage = 0;
+    if (p.last !== t) {
+      if (score >= 80) {
+        p.stage = Math.min(p.stage + 1, MY.EBBINGHAUS_STEPS.length);
+        p.due = addDays(t, MY.EBBINGHAUS_STEPS[Math.min(p.stage - 1, MY.EBBINGHAUS_STEPS.length - 1)]);
+        if (p.stage >= 4 && p.best >= 70) p.mastered = true;
+      } else if (score >= 60) {
+        p.due = addDays(t, 1);
+      } else {
+        p.stage = Math.max(0, p.stage - 1);
+        p.due = addDays(t, 1);
+      }
+    }
+    p.last = t;
+    var rec = day();
+    rec.tests = (rec.tests || 0) + 1;
+    if (score >= 80) rec.ok = (rec.ok || 0) + 1;
+    addXp(Math.round(score / 6) + 3);
+    persist();
+    return { record: p, badges: checkBadges() };
+  }
+
+  var CHEERS = {
+    perfect: ['一字不差，今天你就是诗仙', '全中！这记性够去考状元', '一首不落，稳'],
+    good: ['一天不落，一月成诵', '手感来了，乘胜追击', '越背越快，就是这个节奏'],
+    ok: ['慢一点没关系，明天继续', '记住的都是自己的，不急', '没记住的那几首，明天再来'],
+    low: ['开了头就赢了，明天再来', '背诗如登山，一步一步来', '今天种下，明天发芽']
+  };
+  function cheerOf(acc, hit) {
+    function pick(a) { return a[rnd(a.length)]; }
+    if (hit > 0 && acc === 100) return pick(CHEERS.perfect);
+    if (acc >= 80) return pick(CHEERS.good);
+    if (acc >= 55) return pick(CHEERS.ok);
+    return pick(CHEERS.low);
+  }
+
+  function finishToday(counts, ids, resultMap) {
+    var t = today();
+    var rec = day(t);
+    var ok = counts.ok, mid = counts.mid, no = counts.no;
+    var tries = ok + mid + no;
+    var acc = tries ? Math.round(ok / tries * 100) : 0;
+    rec.done = true;
+    rec.hit = Math.max(rec.hit || 0, ok);
+    rec.total = ids.length;
+    rec.acc = acc;
+    rec.mid = mid;
+    rec.no = no;
+    var best = null;
+    ids.forEach(function (id) {
+      if (resultMap[id] === 'ok') {
+        var p = byId(id);
+        if (p && (!best || p.level > best.level)) best = p;
+      }
+    });
+    if (!best) best = byId(ids[0]) || MY.POEMS[0];
+    rec.ach = {
+      day: dayIndex(),
+      date: t.replace(/-/g, '.'),
+      weekday: '日一二三四五六'[new Date(t + 'T00:00:00').getDay()],
+      hit: ok,
+      total: ids.length,
+      acc: acc,
+      streak: streak(),
+      mastered: masteredCount(),
+      reads: rec.reads || 0,
+      bestId: best ? best.id : ids[0]
+    };
+    persist();
+    return {
+      acc: acc, ok: ok, mid: mid, no: no, total: ids.length, best: best,
+      badges: checkBadges(), cheer: cheerOf(acc, ok), mode: 'today'
+    };
+  }
+
+  var TYPES = ['blank', 'next', 'prev', 'title', 'author'];
+  var LABEL = { blank: '补上被挖掉的字', next: '它的下一句是', prev: '它的上一句是', title: '这出自哪一首', author: '它的作者是' };
+  function pickType() {
+    var w = [42, 26, 14, 11, 7];
+    var s = 0;
+    w.forEach(function (v) { s += v; });
+    var r = rnd(s);
+    for (var i = 0; i < w.length; i++) {
+      if (r < w[i]) return TYPES[i];
+      r -= w[i];
+    }
+    return 'blank';
+  }
+  function distract(kind, len, others, avoid) {
+    for (var g = 0; g < 400; g++) {
+      var q = others[rnd(others.length)];
+      var c = null;
+      if (kind === 'frag') {
+        var ls = q.lines.map(plain).filter(function (x) { return x.length > len; });
+        if (!ls.length) continue;
+        var t = ls[rnd(ls.length)];
+        c = t.substr(rnd(t.length - len + 1), len);
+      } else if (kind === 'line') {
+        var lines = q.lines.map(plain).filter(function (x) { return x.length >= 4; });
+        if (!lines.length) continue;
+        c = lines[rnd(lines.length)];
+      } else if (kind === 'title') c = q.title;
+      else if (kind === 'author') c = q.dynasty + '·' + q.author;
+      if (c && avoid.indexOf(c) < 0) return c;
+    }
+    return null;
+  }
+  function makeQ(p, type) {
+    var others = MY.POEMS.filter(function (x) { return x.id !== p.id; });
+    var lines = p.lines.map(plain).filter(function (x) { return x.length >= 3; });
+    if (!lines.length) return null;
+    var opts = [], ans = '', stem = '', full = '', big = false;
+    if (type === 'blank') {
+      var s = lines[rnd(lines.length)];
+      var len = s.length >= 10 ? 3 : 2;
+      var st = rnd(Math.max(1, s.length - len));
+      ans = s.substr(st, len);
+      opts = [ans];
+      while (opts.length < 4) { var c1 = distract('frag', len, others, opts); if (!c1) break; opts.push(c1); }
+      stem = MY.esc(s.slice(0, st)) + '<span class="blank">' + '　'.repeat(len) + '</span>' + MY.esc(s.slice(st + len));
+      full = s;
+    } else if (type === 'next') {
+      if (lines.length < 2) return null;
+      var i1 = rnd(lines.length - 1);
+      ans = lines[i1 + 1];
+      opts = [ans];
+      while (opts.length < 4) { var c2 = distract('line', 0, others, opts); if (!c2) break; opts.push(c2); }
+      stem = MY.esc(lines[i1]);
+      full = lines[i1] + '，' + ans;
+      big = ans.length > 7;
+    } else if (type === 'prev') {
+      if (lines.length < 2) return null;
+      var i2 = 1 + rnd(lines.length - 1);
+      ans = lines[i2 - 1];
+      opts = [ans];
+      while (opts.length < 4) { var c3 = distract('line', 0, others, opts); if (!c3) break; opts.push(c3); }
+      stem = MY.esc(lines[i2]);
+      full = ans + '，' + lines[i2];
+      big = ans.length > 7;
+    } else if (type === 'title') {
+      var s2 = lines[rnd(lines.length)];
+      ans = p.title;
+      opts = [ans];
+      while (opts.length < 4) { var c4 = distract('title', 0, others, opts); if (!c4) break; opts.push(c4); }
+      stem = '「' + MY.esc(s2) + '」';
+      full = s2;
+      big = s2.length > 9;
+    } else {
+      var s3 = lines[rnd(lines.length)];
+      ans = p.dynasty + '·' + p.author;
+      opts = [ans];
+      while (opts.length < 4) { var c5 = distract('author', 0, others, opts); if (!c5) break; opts.push(c5); }
+      stem = '「' + MY.esc(s3) + '」';
+      full = s3;
+      big = s3.length > 9;
+    }
+    if (opts.length < 4) return null;
+    var idx = shuffle(opts.map(function (o, i) { return i; }));
+    return {
+      type: type,
+      label: LABEL[type],
+      stemHtml: stem,
+      big: big,
+      opts: idx.map(function (i) { return opts[i]; }),
+      ans: idx.indexOf(0),
+      full: full,
+      poemId: p.id
+    };
+  }
+  function makeQuestion(poem, type) {
+    var t = type || pickType();
+    var q = makeQ(poem, t);
+    if (!q) q = makeQ(poem, 'blank');
+    if (!q) q = makeQ(poem, 'title');
+    return q;
+  }
+
+  var WEEK_NAMES = ['第一周 · 开卷', '第二周 · 进境', '第三周 · 攻坚', '第四周 · 收官', '冲刺 · 总复习'];
+
+  function stats() {
+    var rec = state.days && state.days[today()];
+    var deck = deckToday();
+    var last = null;
+    if (state.badges && state.badges.length) {
+      var id = state.badges[state.badges.length - 1];
+      last = BADGES.filter(function (b) { return b.id === id; })[0] || null;
+    }
+    var w = weekOf(dayIndex());
+    return {
+      day: dayIndex(),
+      weekName: WEEK_NAMES[w] || WEEK_NAMES[0],
+      mastered: masteredCount(),
+      deck: deck,
+      due: dueList().length,
+      todayDone: !!(rec && rec.done),
+      badge: last ? last.nm : '',
+      xp: state.xp || 0,
+      rank: rank(),
+      streak: streak()
+    };
+  }
+
+  function speak(text) {
+    if (!('speechSynthesis' in window)) {
+      if (MY.toast) MY.toast('这台设备暂时读不出来，我们看着字一起背');
+      return;
+    }
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-CN';
+      u.rate = 0.8;
+      window.speechSynthesis.speak(u);
+    } catch (e) {
+      if (MY.toast) MY.toast('这台设备暂时读不出来，我们看着字一起背');
+    }
+  }
+
+  MY.gushi = {
+    reload: reload,
+    persist: persist,
+    snapshot: function () { return state; },
+    stats: stats,
+    deck: deckToday,
+    poem: byId,
+    record: P,
+    markRead: markRead,
+    grade: grade,
+    finishToday: finishToday,
+    makeQuestion: makeQuestion,
+    cheerOf: cheerOf,
+    speak: speak,
+    fullText: function (p) { return p.lines.join(''); },
+    todayDone: function () {
+      var rec = state.days && state.days[today()];
+      return !!(rec && rec.done);
+    },
+    badges: function () {
+      return BADGES.map(function (b) {
+        return { id: b.id, nm: b.nm, got: !!(state.badges && state.badges.indexOf(b.id) >= 0) };
+      });
+    }
+  };
+})(window.MY = window.MY || {});
+
+
+/* ===== views/today.js ===== */
+/* 今日：人生设计师的工作室控制台。作品墙是主体。 */
+(function (MY) {
+  'use strict';
+
+  var WEEK = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+
+  function dailyPoem() {
+    var doy = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 864e5);
+    return MY.POEMS[doy % MY.POEMS.length];
+  }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function clockText(now) {
+    return pad(now.getHours()) + ':' + pad(now.getMinutes());
+  }
+  function dateText(now) {
+    return WEEK[now.getDay()] + ' ' + (now.getMonth() + 1) + '月' + now.getDate() + '日';
+  }
+  function reviewDue(now) {
+    return now.getDay() === 6 && now.getHours() >= 18;
+  }
+  function focusLine(now) {
+    var tasks = MY.taskMap();
+    var feast = MY.feastList();
+    var classes = MY.todayClasses(now);
+    var current = null;
+    classes.list.forEach(function (row) { if (row.state === 'now') current = row; });
+    if (current && current.subject) return '现在是第 ' + current.n + ' 节 · ' + current.subject;
+    var undone = feast.filter(function (id) { return !tasks[id]; });
+    if (undone.length) {
+      var t = MY.taskById(undone[0]);
+      return t ? '先完成「' + t.name + '」' : '先把进行中的作品做完';
+    }
+    var doneN = MY.ALL_TASKS.filter(function (t) { return !!tasks[t.id]; }).length;
+    if (!feast.length && !doneN) return '先决定今天要完成哪几件作品';
+    if (doneN >= MY.ALL_TASKS.length) return '今天的作品都完成了';
+    return '接着把剩下的作品做完';
+  }
+  function nextLabel() {
+    var tasks = MY.taskMap();
+    var feast = MY.feastList();
+    var doneN = MY.ALL_TASKS.filter(function (t) { return !!tasks[t.id]; }).length;
+    if (!feast.length && !doneN) return '开始大餐';
+    if (doneN >= MY.ALL_TASKS.length) return '今天完成了';
+    return '继续';
+  }
+  function paintLive(now) {
+    now = now || new Date();
+    var clock = document.getElementById('studio-clock');
+    var date = document.getElementById('studio-date');
+    if (clock) clock.textContent = clockText(now);
+    if (date) date.textContent = dateText(now);
+    var curMin = now.getHours() * 60 + now.getMinutes();
+    var rows = document.querySelectorAll('.period');
+    Array.prototype.forEach.call(rows, function (row) {
+      var start = +row.getAttribute('data-start');
+      var end = +row.getAttribute('data-end');
+      var state = curMin >= end ? 'past' : (curMin >= start ? 'now' : 'later');
+      row.classList.toggle('past', state === 'past');
+      row.classList.toggle('now', state === 'now');
+      var mark = row.querySelector('.period-mark');
+      if (mark) mark.textContent = state === 'now' ? '正在上' : (state === 'past' ? '已过' : '');
+    });
+  }
+
+  MY.views = MY.views || {};
+  MY.views.today = {
+    _clock: null,
+    mount: function () {
+      var self = this;
+      paintLive(new Date());
+      if (this._clock) return;
+      this._clock = setInterval(function () {
+        if (!document.getElementById('studio-clock')) { self.unmount(); return; }
+        paintLive(new Date());
+      }, 1000);
+    },
+    unmount: function () {
+      if (this._clock) clearInterval(this._clock);
+      this._clock = null;
+    },
+    render: function () {
+      var now = new Date();
+      var tasks = MY.taskMap();
+      var feast = MY.feastList();
+      var poem = dailyPoem();
+      var gs = MY.gushi.stats();
+      var deckPoem = gs.deck && gs.deck.length ? MY.gushi.poem(gs.deck[0]) : poem;
+      var classes = MY.todayClasses(now);
+      var pet = MY.petById(MY.state.activePet);
+      var petLevel = pet ? MY.getPetData(pet.id).level : 1;
+      var yl = (MY.state.system && MY.state.system.yuanli) || { life: 0, drive: 0, learn: 0 };
+      var ylSum = (yl.life || 0) + (yl.drive || 0) + (yl.learn || 0);
+      var html = '<div class="studio">';
+
+      html += '<section class="studio-id">';
+      html += '<div class="studio-when"><b id="studio-clock">' + clockText(now) + '</b><span id="studio-date">' + dateText(now) + '</span></div>';
+      html += '<p class="studio-who">我是陈牧橒，人生设计师。</p>';
+      html += '<p class="studio-focus">' + MY.esc(focusLine(now)) + '</p>';
+      html += '<div class="studio-stats"><span><b>' + MY.coins() + '</b>阳光</span><span><b>' + (MY.state.streak || 1) + '</b>天连续</span></div>';
+      if (ylSum > 0) html += '<p class="studio-yl">元力 ' + ylSum + '</p>';
+      html += '</section>';
+
+      html += '<section class="wall" aria-label="今日作品墙">';
+      MY.ALL_TASKS.forEach(function (t) {
+        var done = !!tasks[t.id];
+        var doing = !done && feast.indexOf(t.id) >= 0;
+        var cls = done ? 'done' : (doing ? 'doing' : 'todo');
+        var label = done ? '已完成' : (doing ? '进行中' : '未点');
+        html += '<div class="work ' + cls + '"><b>' + MY.esc(t.name) + '</b><small>' + label + '</small></div>';
+      });
+      html += '</section>';
+
+      html += '<aside class="studio-side">';
+      html += '<section class="side-card schedule">';
+      html += '<div class="kicker">' + WEEK[classes.day] + '课表</div>';
+      if (!classes.inSchool) {
+        html += '<p class="side-empty">今天没有校内课。</p>';
+      } else {
+        classes.list.forEach(function (row) {
+          var start = row.start.split(':');
+          var end = row.end.split(':');
+          var smin = (+start[0]) * 60 + (+start[1]);
+          var emin = (+end[0]) * 60 + (+end[1]);
+          html += '<div class="period ' + row.state + '" data-start="' + smin + '" data-end="' + emin + '">';
+          html += '<b>第' + row.n + '节</b><span>' + MY.esc(row.subject) + '</span>';
+          html += '<em>' + row.start + '–' + row.end + '</em>';
+          html += '<i class="period-mark">' + (row.state === 'now' ? '正在上' : (row.state === 'past' ? '已过' : '')) + '</i>';
+          html += '</div>';
+        });
+      }
+      html += '<p class="schedule-note">' + MY.esc(classes.note) + '</p>';
+      html += '</section>';
+      html += '<section class="side-card mini">';
+      html += '<p><b>晨读</b> ' + (gs.todayDone ? '今天已复习' : '今天先背《' + MY.esc(deckPoem ? deckPoem.title : '') + '》') + '</p>';
+      html += '<p class="poem-bit">' + MY.esc(poem.lines[0] || '') + ' <span>—— ' + MY.esc(poem.title) + '</span></p>';
+      html += '<p class="pet-bit">' + (pet ? MY.petSVG(pet.id, petLevel) : MY.petSVG('panda', 1));
+      html += '<span>' + (pet ? MY.esc(pet.name) + ' 在工作室' : '还没选工作室伙伴') + '</span></p>';
+      html += '</section>';
+      if (reviewDue(now)) {
+        html += '<section class="side-card review"><p>周六复盘到点了</p><button type="button" class="text-btn" data-act="open-review">去签字</button></section>';
+      }
+      html += '<button type="button" class="btn-main studio-go" data-act="open-feast">' + nextLabel() + '</button>';
+      html += '<button type="button" class="board-parent" data-go="parent">家长看看</button>';
+      html += '</aside></div>';
+      return html;
+    },
+    act: {
+      'open-feast': function () {
+        MY.views.feast.step = 'menu';
+        MY.go('feast');
+      },
+      'open-review': function () {
+        if (MY.views.mainline) MY.views.mainline.tab = 'review';
+        MY.go('mainline');
+      }
+    }
+  };
+})(window.MY = window.MY || {});
+
+
+/* ===== views/feast.js ===== */
+/* 大餐：从今日进入。点餐 → 三确认 → 番茄钟。走完回到今日。 */
+(function (MY) {
+  'use strict';
+
+  function isRead(id) { return id === 'zaodu' || id === 'wandu'; }
+  function nextDish() {
+    return MY.feastList().filter(function (id) { return !MY.taskMap()[id]; })[0] || null;
+  }
+  function fmt(sec) {
+    sec = Math.max(0, sec | 0);
+    return Math.floor(sec / 60) + ':' + MY.pad(sec % 60);
+  }
+  function praise(res) {
+    if (!res || !res.ok) return;
+    var yl = res.yl ? MY.YL_NAME[res.yl] + ' +1 · ' : '';
+    if (MY.toast) MY.toast('叮！「' + res.task.name + '」完成 · ' + yl + '阳光 +' + res.task.reward);
+    if (MY.ding) MY.ding();
+    if (MY.burst) MY.burst();
+    if (res.levels && res.petName && MY.toast) {
+      setTimeout(function () { MY.toast(res.petName + ' 升了一级，元力满满'); }, 700);
+    }
+  }
+
+  var view = {
+    step: 'menu',
+    minutes: 10,
+    remain: 600,
+    running: false,
+    timer: null,
+    armedId: null,
+    checks: { desk: false, water: false, toilet: false },
+
+    stop: function () {
+      this.running = false;
+      if (this.timer) { clearInterval(this.timer); this.timer = null; }
+    },
+    unmount: function () { this.stop(); },
+    setRemain: function (sec) {
+      this.remain = sec;
+      var el = document.getElementById('pomoTime');
+      if (el) el.textContent = fmt(this.remain);
+    },
+    armFor: function (id) {
+      if (this.armedId !== id) {
+        this.armedId = id;
+        this.remain = this.minutes * 60;
+        this.stop();
+      }
+    },
+    tick: function () {
+      if (!this.running) return;
+      this.remain -= 1;
+      if (this.remain < 0) this.remain = 0;
+      var el = document.getElementById('pomoTime');
+      if (el) el.textContent = fmt(this.remain);
+      if (this.remain <= 0) {
+        this.stop();
+        this.finishCurrent();
+      }
+    },
+    finishCurrent: function () {
+      var id = nextDish();
+      if (!id || isRead(id)) { MY.render(); return; }
+      var res = MY.completeTask(id);
+      if (res.ok && MY.state.activePet) res.petName = (MY.petById(MY.state.activePet) || {}).name;
+      praise(res);
+      this.continueNext();
+      MY.render();
+    },
+    continueNext: function () {
+      var id = nextDish();
+      if (!id) { this.step = 'done'; this.stop(); return; }
+      this.step = 'work';
+      if (!isRead(id)) this.armFor(id);
+    },
+
+    render: function () {
+      var title = this.step === 'confirm' ? '开工确认' : (this.step === 'work' ? '番茄钟' : (this.step === 'done' ? '大餐完成' : '点餐'));
+      var html = '<div class="flow-top"><button type="button" class="back" data-act="feast-exit">← 回到今日</button><div class="flow-title">' + title + '</div></div>';
+      if (this.step === 'confirm') html += this.confirmHtml();
+      else if (this.step === 'work') html += this.workHtml();
+      else if (this.step === 'done') html += this.doneHtml();
+      else html += this.menuHtml();
+      return html;
+    },
+
+    menuHtml: function () {
+      var tasks = MY.taskMap();
+      var feast = MY.feastList();
+      var shortName = { must: '招牌', veg: '时蔬', snack: '小食' };
+      var html = '<div class="order-screen"><div class="order-layout"><nav class="order-nav">';
+      MY.TASK_GROUPS.forEach(function (g) {
+        html += '<button type="button" data-act="jump-group" data-group="' + g.key + '"><span>' + g.icon + '</span>' + (shortName[g.key] || '') + '</button>';
+      });
+      html += '</nav><div class="order-list">';
+      MY.TASK_GROUPS.forEach(function (g) {
+        html += '<h2 class="order-sec" id="group-' + g.key + '">' + MY.GROUP_TITLES[g.key] + '</h2><div class="order-grid">';
+        g.tasks.forEach(function (t) {
+          var done = !!tasks[t.id];
+          var on = !done && feast.indexOf(t.id) >= 0;
+          html += '<button type="button" class="menu-card' + (done ? ' done' : '') + (on ? ' on' : '') + '" data-act="toggle-dish" data-id="' + t.id + '">';
+          html += '<span class="menu-ico" style="background:' + g.bg + '">' + g.icon + '</span>';
+          html += '<span class="menu-main"><b>' + MY.esc(t.dish) + '</b><span class="menu-task">' + MY.esc(t.name) + '</span><span class="menu-meta">' + MY.esc(t.meta) + '</span></span>';
+          html += '<span class="menu-side"><span class="menu-price"><b>' + t.reward + '</b><small>阳光</small></span>';
+          html += '<span class="menu-qty">' + (done ? '吃完' : (on ? '1' : '+')) + '</span></span></button>';
+        });
+        html += '</div>';
+      });
+      html += '</div></div>';
+      var picked = feast.filter(function (id) { return !tasks[id]; });
+      var sum = 0;
+      var names = [];
+      picked.forEach(function (id) {
+        var t = MY.taskById(id);
+        if (!t) return;
+        sum += t.reward;
+        names.push(t.dish);
+      });
+      var label = '先点几道菜';
+      var disabled = !feast.length;
+      if (feast.length && !MY.state.confirmed) label = '确认下单';
+      else if (picked.length) label = '开始做菜';
+      else if (feast.length) label = '今天的菜吃完啦';
+      html += '<div class="cart-bar"><div class="cart-info"><b>已点 ' + picked.length + ' 道</b>';
+      html += '<span>' + (names.length ? MY.esc(names.join('、')) : '还没点菜，点喜欢的菜加入今日大餐~') + '</span>';
+      html += '<em>阳光 +' + sum + '</em></div>';
+      html += '<button type="button" class="btn-main cart-go" data-act="feast-next"' + (disabled ? ' disabled' : '') + '>' + label + '</button></div></div>';
+      return html;
+    },
+
+    confirmHtml: function () {
+      var self = this;
+      var items = [
+        ['desk', '🧹 桌面收拾干净了'],
+        ['water', '💧 喝好水了'],
+        ['toilet', '🚽 上厕所了']
+      ];
+      var html = '<section class="card confirm-card"><h2>准备开始啦！</h2>';
+      html += '<p class="lead">菜点好了，开工前再确认三件事都做好了哦~</p>';
+      items.forEach(function (it) {
+        var on = !!self.checks[it[0]];
+        html += '<button type="button" class="ck' + (on ? ' on' : '') + '" data-act="ck" data-k="' + it[0] + '" aria-pressed="' + (on ? 'true' : 'false') + '">';
+        html += '<span class="box">' + (on ? '✓' : '') + '</span><span>' + it[1] + '</span></button>';
+      });
+      var ready = self.checks.desk && self.checks.water && self.checks.toilet;
+      html += '<button type="button" class="btn-main" data-act="confirm-go"' + (ready ? '' : ' disabled') + '>' +
+        (ready ? '太好了，开始做菜！' : '还有没做完的哦~') + '</button></section>';
+      return html;
+    },
+
+    workHtml: function () {
+      var id = nextDish();
+      if (!id) { this.step = 'done'; return this.doneHtml(); }
+      var t = MY.taskById(id);
+      if (!t) { this.step = 'done'; return this.doneHtml(); }
+      if (isRead(id)) {
+        return '<section class="card work-card"><div class="kicker">这道菜在晨读</div><h2>' + MY.esc(t.name) + '</h2>' +
+          '<p class="lead">🥘 ' + MY.esc(t.dish) + '</p>' +
+          '<p>背完今天的卡组，这道菜就算吃完，阳光会记上。</p>' +
+          '<button type="button" class="btn-main" data-act="go-read" data-id="' + id + '">去晨读</button>' +
+          '<button type="button" class="btn-ghost" data-act="feast-back-menu">先回菜单</button></section>';
+      }
+      this.armFor(id);
+      var self = this;
+      var html = '<section class="card work-card">';
+      html += '<div class="kicker" id="pomoTaskName">🍅 ' + MY.esc(t.name) + ' · ' + MY.esc(t.dish) + '</div>';
+      html += '<div class="pomo-time" id="pomoTime">' + fmt(this.remain) + '</div>';
+      html += '<p class="fine">慢慢做，做完这道菜就有 ' + t.reward + ' 阳光。</p>';
+      html += '<div class="dur">';
+      [5, 10, 15, 25].forEach(function (m) {
+        html += '<button type="button" class="' + (self.minutes === m ? 'on' : '') + '" data-act="pomo-min" data-min="' + m + '">' + m + '分</button>';
+      });
+      html += '</div>';
+      html += '<div class="row2">';
+      html += '<button type="button" class="btn-ghost" data-act="pomo-skip">这道先放放</button>';
+      html += '<button type="button" class="' + (this.running ? 'btn-stop' : 'btn-main') + '" data-act="pomo-toggle">' + (this.running ? '暂停' : '开始') + '</button>';
+      html += '</div></section>';
+      return html;
+    },
+
+    doneHtml: function () {
+      var got = MY.ALL_TASKS.filter(function (t) { return !!MY.taskMap()[t.id]; }).reduce(function (s, t) { return s + t.reward; }, 0);
+      return '<section class="card cele"><div class="cele-big">🎉</div><h2>大餐完成！</h2>' +
+        '<p class="lead">牧橒今天的大餐全吃完啦！</p>' +
+        '<p>元力满满！这就是人生设计师的一天。</p>' +
+        '<p class="fine">今天已经记下 ' + got + ' 阳光 · 现在一共 ' + MY.coins() + ' 阳光</p>' +
+        '<button type="button" class="btn-main" data-act="feast-exit">回到今日</button></section>';
+    },
+
+    act: {
+      'feast-exit': function () {
+        view.stop();
+        view.step = 'menu';
+        MY.go('today');
+      },
+      'toggle-dish': function (el) {
+        var id = el.dataset.id;
+        if (!Array.isArray(MY.state.feast)) MY.state.feast = [];
+        if (MY.taskMap()[id]) {
+          MY.toast('这道菜今天已经吃过啦');
+          return;
+        }
+        var i = MY.state.feast.indexOf(id);
+        if (i >= 0) MY.state.feast.splice(i, 1);
+        else MY.state.feast.push(id);
+        MY.save();
+        MY.render();
+      },
+      'feast-next': function () {
+        if (!MY.feastList().length) return;
+        var undone = MY.feastList().filter(function (id) { return !MY.taskMap()[id]; });
+        if (!MY.state.confirmed) {
+          view.checks = { desk: false, water: false, toilet: false };
+          view.step = 'confirm';
+          MY.render();
+          return;
+        }
+        if (!undone.length) { view.step = 'done'; MY.render(); return; }
+        view.step = 'work';
+        MY.render();
+      },
+      ck: function (el) {
+        var k = el.dataset.k;
+        view.checks[k] = !view.checks[k];
+        MY.render();
+      },
+      'confirm-go': function () {
+        if (!(view.checks.desk && view.checks.water && view.checks.toilet)) return;
+        MY.state.confirmed = true;
+        MY.save();
+        if (MY.ding) MY.ding();
+        MY.toast('准备就绪，开吃今天的菜');
+        var id = nextDish();
+        view.step = id ? 'work' : 'done';
+        MY.render();
+      },
+      'pomo-min': function (el) {
+        var m = +el.dataset.min;
+        if (!m) return;
+        view.minutes = m;
+        view.remain = m * 60;
+        view.stop();
+        MY.render();
+      },
+      'pomo-toggle': function () {
+        if (view.running) { view.stop(); MY.render(); return; }
+        view.running = true;
+        view.timer = setInterval(function () { view.tick(); }, 1000);
+        MY.render();
+      },
+      'pomo-skip': function () {
+        view.stop();
+        view.step = 'menu';
+        MY.render();
+      },
+      'feast-back-menu': function () {
+        view.stop();
+        view.step = 'menu';
+        MY.render();
+      },
+      'jump-group': function (el) {
+        var node = document.getElementById('group-' + el.dataset.group);
+        if (node) node.scrollIntoView({ block: 'start' });
+      },
+      'go-read': function (el) {
+        var id = el.dataset.id || nextDish();
+        if (MY.gushi.todayDone()) {
+          var res = MY.completeTask(id);
+          praise(res);
+          view.continueNext();
+          MY.render();
+          return;
+        }
+        MY.pendingRecite = id;
+        MY.views.morning.auto = true;
+        MY.go('morning');
+      }
+    }
+  };
+
+  MY.views = MY.views || {};
+  MY.views.feast = view;
+})(window.MY = window.MY || {});
+
+
+/* ===== views/morning.js ===== */
+/* 晨读：25 首原文、今日卡组、艾宾浩斯打分、斩卡。 */
+(function (MY) {
+  'use strict';
+
+  function shuffle(a) {
+    a = a.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  var view = {
+    mode: 'home',
+    auto: false,
+    rec: null,
+    quiz: null,
+    result: null,
+    resultDish: null,
+    detailId: null,
+
+    takeAuto: function () {
+      if (!this.auto) return;
+      this.auto = false;
+      this.startRecall('today');
+    },
+    startRecall: function (mode) {
+      var ids = MY.gushi.deck();
+      if (!ids.length) { MY.toast('没有可背的篇目'); return; }
+      this.result = null;
+      this.mode = 'recall';
+      this.rec = {
+        ids: ids.slice(),
+        queue: ids.map(function (id) { return { id: id }; }),
+        idx: 0,
+        flipped: false,
+        locked: false,
+        counts: { ok: 0, mid: 0, no: 0 },
+        result: {},
+        retries: {},
+        mode: mode || 'today'
+      };
+    },
+    finishRec: function () {
+      var rec = this.rec;
+      if (!rec) return;
+      var summary;
+      if (rec.mode === 'today') summary = MY.gushi.finishToday(rec.counts, rec.ids, rec.result);
+      else {
+        var tries = rec.counts.ok + rec.counts.mid + rec.counts.no;
+        var acc = tries ? Math.round(rec.counts.ok / tries * 100) : 0;
+        summary = {
+          acc: acc, ok: rec.counts.ok, mid: rec.counts.mid, no: rec.counts.no,
+          total: rec.ids.length, cheer: MY.gushi.cheerOf(acc, rec.counts.ok),
+          mode: 'free', best: MY.gushi.poem(rec.ids[0]), badges: []
+        };
+      }
+      if (summary.badges && summary.badges.length) {
+        MY.toast('获得徽章：' + summary.badges.map(function (b) { return b.nm; }).join('、'));
+      }
+      var dish = null;
+      if (MY.pendingRecite && rec.mode === 'today') {
+        var pid = MY.pendingRecite;
+        MY.pendingRecite = null;
+        var res = MY.completeTask(pid);
+        if (res && res.ok) {
+          dish = res.task;
+          var yl = res.yl ? MY.YL_NAME[res.yl] + ' +1 · ' : '';
+          MY.toast('叮！「' + res.task.name + '」吃完了 · ' + yl + '阳光 +' + res.task.reward);
+          if (MY.ding) MY.ding();
+        }
+      }
+      this.rec = null;
+      this.result = summary;
+      this.resultDish = dish;
+      this.mode = 'result';
+      if (MY.burst) MY.burst();
+      MY.render();
+    },
+    startQuiz: function (ids) {
+      if (!ids || !ids.length) ids = shuffle(MY.POEMS.map(function (p) { return p.id; })).slice(0, 10);
+      this.mode = 'quiz';
+      this.quiz = {
+        ids: ids.slice(),
+        queue: ids.map(function (id) { return { id: id }; }),
+        idx: 0,
+        hit: [],
+        right: 0,
+        wrong: 0,
+        retry: {},
+        q: null,
+        locked: false,
+        picked: null,
+        reveal: null
+      };
+      this.drawQ();
+    },
+    drawQ: function () {
+      var quiz = this.quiz;
+      if (!quiz) return false;
+      if (quiz.idx >= quiz.queue.length) { this.finishQuiz(); return false; }
+      var poem = MY.gushi.poem(quiz.queue[quiz.idx].id);
+      quiz.q = poem ? MY.gushi.makeQuestion(poem) : null;
+      quiz.locked = false;
+      quiz.picked = null;
+      quiz.reveal = null;
+      if (!quiz.q) { quiz.idx += 1; return this.drawQ(); }
+      return true;
+    },
+    finishQuiz: function () {
+      var quiz = this.quiz;
+      if (!quiz) return;
+      var tries = quiz.right + quiz.wrong;
+      var acc = tries ? Math.round(quiz.right / tries * 100) : 0;
+      var stars = acc >= 95 ? 3 : acc >= 80 ? 2 : acc >= 60 ? 1 : 0;
+      this.result = { mode: 'quiz', ok: quiz.hit.length, total: quiz.ids.length, right: quiz.right, wrong: quiz.wrong, acc: acc, stars: stars, ids: quiz.ids.slice() };
+      this.quiz = null;
+      this.mode = 'result';
+      if (MY.burst) MY.burst();
+      MY.render();
+    },
+
+    render: function () {
+      if (this.mode === 'recall' && this.rec) return this.recallHtml();
+      if (this.mode === 'quiz' && this.quiz) return this.quizHtml();
+      if (this.mode === 'result' && this.result) return this.resultHtml();
+      if (this.mode === 'detail' && this.detailId) return this.detailHtml();
+      return this.homeHtml();
+    },
+
+    homeHtml: function () {
+      var s = MY.gushi.stats();
+      var html = '<section class="card">';
+      html += '<div class="kicker">' + MY.esc(s.weekName) + ' · 三三七晨读</div>';
+      html += '<h1>第 ' + s.day + ' 天</h1>';
+      html += '<div class="stat4">';
+      html += '<div><b>' + s.mastered + '/25</b><span>已掌握</span></div>';
+      html += '<div><b>' + s.streak + '</b><span>连续晨读</span></div>';
+      html += '<div><b>' + MY.esc(s.rank) + '</b><span>称号</span></div>';
+      html += '<div><b>' + s.xp + '</b><span>经验</span></div>';
+      html += '</div>';
+      html += '<p class="fine">' + (s.todayDone ? '今日已打卡' : '今日卡组 ' + s.deck.length + ' 首待背') +
+        (s.due ? ' · 到复习时间 ' + s.due + ' 首' : '') +
+        (s.badge ? ' · 最新徽章 ' + MY.esc(s.badge) : '') + '</p>';
+      if (MY.pendingRecite) {
+        var task = MY.taskById(MY.pendingRecite);
+        if (task) html += '<p class="banner">背完今天这一组，「' + MY.esc(task.dish) + '」这道菜就吃完了。</p>';
+      }
+      html += '<div class="chips">';
+      s.deck.forEach(function (id) {
+        var p = MY.gushi.poem(id);
+        if (p) html += '<span>' + MY.esc(p.title) + '</span>';
+      });
+      html += '</div>';
+      html += '<button type="button" class="btn-main" data-act="start-today">' + (s.todayDone ? '今日已打卡，再练一组' : '开始背诵') + '</button>';
+      html += '<button type="button" class="btn-ghost" data-act="start-quiz">斩卡闯关</button>';
+      html += '</section>';
+      html += '<h2 class="sec">四年级上 · 25 首</h2>';
+      MY.POEMS.forEach(function (p) {
+        var rec = MY.gushi.record(p.id);
+        html += '<button type="button" class="poem-row" data-act="open-poem" data-id="' + p.id + '">';
+        html += '<b>' + MY.esc(p.title) + '</b>';
+        html += '<small>' + MY.esc(p.dynasty) + ' · ' + MY.esc(p.author) + (rec.mastered ? ' · 已掌握' : '') + '</small>';
+        html += '</button>';
+      });
+      return html;
+    },
+
+    recallHtml: function () {
+      var rec = this.rec;
+      var item = rec.queue[rec.idx];
+      var p = MY.gushi.poem(item.id);
+      var st = MY.gushi.record(p.id);
+      var done = rec.counts.ok + rec.counts.mid + rec.counts.no;
+      var html = '<section class="card recall">';
+      html += '<div class="bar"><i style="width:' + Math.round(done / Math.max(1, rec.ids.length) * 100) + '%"></i></div>';
+      html += '<p class="fine">已背 ' + done + ' / ' + rec.ids.length + '</p>';
+      html += '<div class="kicker">' + (st.stage < 0 ? '新学' : '复习') + ' · ' + MY.esc(MY.GENRES[p.genre].name) + ' · ' + '★'.repeat(p.level) + '</div>';
+      html += '<h2 class="rec-title">' + MY.esc(p.title) + '</h2>';
+      html += '<p class="fine">' + MY.esc(p.dynasty) + ' · ' + MY.esc(p.author) + ' · 已读 ' + st.reads + ' 遍</p>';
+      if (!rec.flipped) {
+        html += '<p class="lead">先出声背一遍，再点下面核对。</p>';
+        html += '<button type="button" class="btn-main" data-act="flip">翻开核对全文</button>';
+      } else {
+        html += '<div class="poem-lines">';
+        p.lines.forEach(function (line) { html += '<p>' + MY.esc(line) + '</p>'; });
+        html += '</div>';
+        html += '<p class="note">⚠ ' + MY.esc(p.note) + '</p>';
+        html += '<div class="rates">';
+        html += '<button type="button" data-act="rate" data-r="ok"><b>✓ 记住</b><small>隔几天再见</small></button>';
+        html += '<button type="button" data-act="rate" data-r="mid"><b>? 不确定</b><small>明天再来</small></button>';
+        html += '<button type="button" data-act="rate" data-r="no"><b>✗ 没记住</b><small>今天再来</small></button>';
+        html += '</div>';
+        html += '<div class="row2">';
+        html += '<button type="button" class="btn-ghost" data-act="rec-speak" data-id="' + p.id + '">听读一遍</button>';
+        html += '<button type="button" class="btn-ghost" data-act="rec-hint" data-id="' + p.id + '">记忆点</button>';
+        html += '</div>';
+      }
+      html += '<button type="button" class="link-quiet" data-act="rec-quit">先收工</button>';
+      html += '</section>';
+      return html;
+    },
+
+    quizHtml: function () {
+      var quiz = this.quiz;
+      var q = quiz.q;
+      var p = MY.gushi.poem(q.poemId);
+      var html = '<section class="card">';
+      html += '<div class="bar"><i style="width:' + Math.round(quiz.hit.length / Math.max(1, quiz.ids.length) * 100) + '%"></i></div>';
+      html += '<p class="fine">斩获 ' + quiz.hit.length + ' / ' + quiz.ids.length + '</p>';
+      html += '<div class="kicker">' + MY.esc(q.label) + '</div>';
+      html += '<div class="stem' + (q.big ? ' sm' : '') + '">' + q.stemHtml + '</div>';
+      html += '<div class="opts">';
+      q.opts.forEach(function (o, i) {
+        var cls = 'opt';
+        if (quiz.locked) {
+          if (i === q.ans) cls += ' right';
+          else if (i === quiz.picked) cls += ' wrong';
+        }
+        html += '<button type="button" class="' + cls + '" data-act="quiz-ans" data-i="' + i + '">' + MY.esc(o) + '</button>';
+      });
+      html += '</div>';
+      if (quiz.reveal) {
+        html += '<div class="note"><b>这一句是</b><p class="poem-line">' + MY.esc(quiz.reveal.full) + '</p>';
+        html += '<p>' + MY.esc(quiz.reveal.note) + '</p>';
+        html += '<button type="button" class="btn-main" data-act="quiz-next">' + (quiz.reveal.again ? '记住了，继续' : '继续') + '</button></div>';
+      }
+      html += '<button type="button" class="link-quiet" data-act="quiz-quit">先离开</button>';
+      html += '</section>';
+      return html;
+    },
+
+    resultHtml: function () {
+      var r = this.result;
+      var html = '<section class="card cele">';
+      if (r.mode === 'quiz') {
+        html += '<div class="cele-big">' + '★'.repeat(r.stars) + '☆'.repeat(3 - r.stars) + '</div>';
+        html += '<h2>' + r.ok + ' / ' + r.total + '</h2>';
+        html += '<p>答对 ' + r.right + ' 次 · 答错 ' + r.wrong + ' 次 · 正确率 ' + r.acc + '%</p>';
+        html += '<button type="button" class="btn-main" data-act="start-quiz" data-ids="' + r.ids.join(',') + '">再来一组</button>';
+      } else {
+        html += '<div class="cele-big">📖</div>';
+        html += '<h2>' + (r.mode === 'today' ? '今日打卡完成' : '这一组背完了') + '</h2>';
+        html += '<p class="lead">' + MY.esc(r.cheer || '') + '</p>';
+        html += '<p>记住 ' + r.ok + ' 首 · 不确定 ' + r.mid + ' · 还要再看 ' + r.no + ' · 正确率 ' + r.acc + '%</p>';
+        if (r.best) {
+          html += '<p class="poem-line">' + MY.esc(r.best.lines[0] || '') + '<br>' + MY.esc(r.best.lines[1] || '') + '</p>';
+          html += '<p class="fine">—— ' + MY.esc(r.best.dynasty) + '·' + MY.esc(r.best.author) + '《' + MY.esc(r.best.title) + '》</p>';
+        }
+        if (this.resultDish || MY.feastList().length) {
+          html += '<button type="button" class="btn-main" data-act="back-feast">回到大餐</button>';
+        }
+      }
+      html += '<button type="button" class="btn-ghost" data-act="back-home">回到晨读</button>';
+      html += '</section>';
+      return html;
+    },
+
+    detailHtml: function () {
+      var p = MY.gushi.poem(this.detailId);
+      if (!p) { this.mode = 'home'; return this.homeHtml(); }
+      var st = MY.gushi.record(p.id);
+      var html = '<button type="button" class="back" data-act="back-home">← 二十五首</button>';
+      html += '<article class="card poem-view">';
+      html += '<div class="kicker">' + MY.esc(MY.GENRES[p.genre].name) + ' · ' + '★'.repeat(p.level) + '</div>';
+      html += '<h1>' + MY.esc(p.title) + '</h1>';
+      html += '<p class="fine">' + MY.esc(p.dynasty) + ' · ' + MY.esc(p.author) + ' · 已读 ' + st.reads + ' 遍' + (st.mastered ? ' · 已掌握' : '') + '</p>';
+      html += '<div class="poem-lines">';
+      p.lines.forEach(function (line) { html += '<p>' + MY.esc(line) + '</p>'; });
+      html += '</div>';
+      html += '<p class="note">⚠ ' + MY.esc(p.note) + '</p>';
+      html += '<p class="hint"><b>记忆点</b> ' + MY.esc(p.hint) + '</p>';
+      html += '<div class="row2">';
+      html += '<button type="button" class="btn-ghost" data-act="rec-speak" data-id="' + p.id + '">听读一遍</button>';
+      html += '<button type="button" class="btn-main" data-act="mark-read" data-id="' + p.id + '">跟读完 +1</button>';
+      html += '</div></article>';
+      return html;
+    },
+
+    act: {
+      'start-today': function () {
+        var mode = MY.gushi.todayDone() ? 'free' : 'today';
+        view.startRecall(mode);
+        MY.render();
+      },
+      'start-quiz': function (el) {
+        var ids = el && el.dataset && el.dataset.ids ? el.dataset.ids.split(',').map(function (x) { return +x; }).filter(Boolean) : null;
+        view.startQuiz(ids);
+        MY.render();
+      },
+      flip: function () {
+        if (!view.rec || view.rec.flipped) return;
+        view.rec.flipped = true;
+        if (MY.tone) MY.tone(520, 0.06, 0.1);
+        MY.render();
+      },
+      rate: function (el) {
+        var rec = view.rec;
+        if (!rec || !rec.flipped || rec.locked) return;
+        rec.locked = true;
+        var id = rec.queue[rec.idx].id;
+        var kind = el.dataset.r;
+        rec.counts[kind] += 1;
+        rec.result[id] = kind;
+        var scored = MY.gushi.grade(id, kind === 'ok' ? 100 : kind === 'mid' ? 65 : 30);
+        if (scored.badges && scored.badges.length) {
+          MY.toast('获得徽章：' + scored.badges.map(function (b) { return b.nm; }).join('、'));
+        }
+        if (kind === 'no') {
+          rec.retries[id] = (rec.retries[id] || 0) + 1;
+          if (rec.retries[id] < 3) rec.queue.push({ id: id });
+        }
+        if (kind === 'ok' && MY.ding) MY.ding();
+        setTimeout(function () {
+          if (view.rec !== rec) return;
+          rec.idx += 1;
+          rec.locked = false;
+          rec.flipped = false;
+          if (rec.idx >= rec.queue.length) view.finishRec();
+          else MY.render();
+        }, 280);
+      },
+      'rec-speak': function (el) {
+        var p = MY.gushi.poem(+el.dataset.id);
+        if (p) MY.gushi.speak(p.lines.join(''));
+      },
+      'rec-hint': function (el) {
+        var p = MY.gushi.poem(+el.dataset.id);
+        if (p) MY.toast(p.hint);
+      },
+      'rec-quit': function () {
+        var n = view.rec ? view.rec.counts.ok : 0;
+        view.rec = null;
+        view.mode = 'home';
+        MY.toast(n ? '今天先到这儿，已记住 ' + n + ' 首' : '今天先到这儿');
+        MY.render();
+      },
+      'quiz-ans': function (el) {
+        var quiz = view.quiz;
+        if (!quiz || !quiz.q || quiz.locked) return;
+        var i = +el.dataset.i;
+        quiz.locked = true;
+        quiz.picked = i;
+        var q = quiz.q;
+        var poem = MY.gushi.poem(q.poemId);
+        if (i === q.ans) {
+          quiz.right += 1;
+          if (quiz.hit.indexOf(q.poemId) < 0) quiz.hit.push(q.poemId);
+          var g = MY.gushi.grade(q.poemId, 100);
+          if (g.badges && g.badges.length) MY.toast('获得徽章：' + g.badges.map(function (b) { return b.nm; }).join('、'));
+          if (MY.ding) MY.ding();
+          MY.render();
+          setTimeout(function () {
+            if (!view.quiz || view.quiz !== quiz) return;
+            quiz.idx += 1;
+            view.drawQ();
+            if (view.mode === 'quiz') MY.render();
+          }, 420);
+        } else {
+          quiz.wrong += 1;
+          MY.gushi.grade(q.poemId, 35);
+          quiz.retry[q.poemId] = (quiz.retry[q.poemId] || 0) + 1;
+          var again = quiz.retry[q.poemId] < 3;
+          if (again) quiz.queue.push({ id: q.poemId });
+          quiz.reveal = { full: q.full, note: poem ? poem.note : '', again: again };
+          MY.toast(again ? '这首待会儿再来一次' : '先记住这一句');
+          MY.render();
+        }
+      },
+      'quiz-next': function () {
+        if (!view.quiz) return;
+        view.quiz.idx += 1;
+        view.drawQ();
+        if (view.mode === 'quiz') MY.render();
+      },
+      'quiz-quit': function () {
+        view.quiz = null;
+        view.mode = 'home';
+        MY.render();
+      },
+      'open-poem': function (el) {
+        view.detailId = +el.dataset.id;
+        view.mode = 'detail';
+        MY.render();
+      },
+      'mark-read': function (el) {
+        var id = +el.dataset.id;
+        var res = MY.gushi.markRead(id);
+        var p = MY.gushi.poem(id);
+        MY.toast('朗读 +1　（' + (p ? p.title : '') + ' 累计 ' + res.record.reads + ' 遍）');
+        if (res.badges && res.badges.length) MY.toast('获得徽章：' + res.badges.map(function (b) { return b.nm; }).join('、'));
+        if (MY.ding) MY.ding();
+        MY.render();
+      },
+      'back-home': function () {
+        view.mode = 'home';
+        view.rec = null;
+        view.quiz = null;
+        view.result = null;
+        MY.render();
+      },
+      'back-feast': function () {
+        view.mode = 'home';
+        MY.views.feast.continueNext();
+        MY.go('feast');
+      }
+    }
+  };
+
+  MY.views = MY.views || {};
+  MY.views.morning = view;
+})(window.MY = window.MY || {});
+
+
+/* ===== views/park.js ===== */
+/* 乐园：6 只宠物 + 15 格花园 + 3 种种子。这一期用原版平面形象。 */
+(function (MY) {
+  'use strict';
+
+  function needToast(res, idle) {
+    if (res && res.need != null) MY.toast('还差 ' + res.need + ' 阳光，再完成一道菜就靠近啦');
+    else MY.toast(idle);
+  }
+
+  var view = {
+    panel: 'pet',
+    render: function () {
+      var html = '<div class="seg">';
+      html += '<button type="button" class="' + (this.panel === 'pet' ? 'on' : '') + '" data-act="panel" data-panel="pet">宠物</button>';
+      html += '<button type="button" class="' + (this.panel === 'garden' ? 'on' : '') + '" data-act="panel" data-panel="garden">花园</button>';
+      html += '</div>';
+      html += this.panel === 'garden' ? this.gardenHtml() : this.petHtml();
+      return html;
+    },
+    petHtml: function () {
+      var active = MY.petById(MY.state.activePet);
+      var html = '';
+      if (!active) {
+        html += '<section class="card stage-card">';
+        html += '<div class="pet-bob">' + MY.petSVG('panda', 1) + '</div>';
+        html += '<h1>欢迎来到萌宠乐园</h1>';
+        html += '<p class="lead">完成任务赚阳光，领养小伙伴！</p></section>';
+      } else {
+        var pd = MY.getPetData(active.id);
+        var rare = MY.RARITY[active.rarity] || { l: '', c: '' };
+        html += '<section class="card stage-card">';
+        html += '<div class="pet-bob" data-pet="' + active.id + '">' + MY.petSVG(active.id, pd.level) + '</div>';
+        html += '<h1>' + MY.esc(active.name) + ' · Lv.' + pd.level + '</h1>';
+        html += '<p class="fine ' + rare.c + '">' + MY.esc(rare.l) + '</p>';
+        html += '<p class="lead">' + (pd.hunger < 25 ? '我好饿呀...' : '牧橒加油！') + '</p>';
+        html += meter('饱食', pd.hunger, '#ffb74d');
+        html += meter('心情', pd.happiness, '#ff7ac8');
+        html += meter('经验', Math.min(100, pd.exp / MY.expNeed(pd.level) * 100), '#5ee0a0', pd.exp + '/' + MY.expNeed(pd.level));
+        html += '<div class="row2">';
+        html += '<button type="button" class="btn-main" data-act="feed">喂食 · 10阳光</button>';
+        html += '<button type="button" class="btn-ghost" data-act="play">玩耍 · 15阳光</button>';
+        html += '</div></section>';
+      }
+      html += '<h2 class="sec">宠物商店 · ' + MY.coins() + ' 阳光</h2>';
+      html += '<div class="shop">';
+      var owned = Array.isArray(MY.state.ownedPets) ? MY.state.ownedPets : [];
+      MY.PET_TYPES.forEach(function (p) {
+        var has = owned.indexOf(p.id) >= 0;
+        var on = MY.state.activePet === p.id;
+        var rare = MY.RARITY[p.rarity] || { l: '' };
+        var lv = has ? MY.getPetData(p.id).level : 1;
+        html += '<button type="button" class="shop-item' + (has ? ' owned' : '') + (on ? ' on' : '') + '" data-act="shop" data-id="' + p.id + '">';
+        html += '<span class="thumb">' + MY.petSVG(p.id, lv) + '</span>';
+        html += '<b>' + MY.esc(p.name) + '</b>';
+        html += '<small>' + MY.esc(rare.l) + (has ? ' · Lv.' + lv : '') + '</small>';
+        html += '<em>' + (has ? (on ? '陪伴中' : '切换') : (p.cost + '阳光')) + '</em>';
+        html += '</button>';
+      });
+      html += '</div>';
+      return html;
+    },
+    gardenHtml: function () {
+      var html = '<section class="card">';
+      html += '<div class="kicker">十五格花园</div>';
+      html += '<p class="lead">点种子，再点草坪空地种下</p>';
+      html += '<div class="lawn">';
+      var lawn = Array.isArray(MY.state.lawn) ? MY.state.lawn : [];
+      var seedOn = MY.state.selectedSeed != null;
+      for (var i = 0; i < 15; i++) {
+        var cell = lawn[i];
+        var cls = 'cell' + (cell ? ' filled' : '') + (!cell && seedOn ? ' ready' : '');
+        html += '<button type="button" class="' + cls + '" data-act="plant" data-i="' + i + '" aria-label="第' + (i + 1) + '格">';
+        if (cell && cell.type) html += MY.plantSVG(cell.type);
+        html += '</button>';
+      }
+      html += '</div></section>';
+      html += '<div class="seeds">';
+      MY.SEEDS.forEach(function (s, idx) {
+        var on = MY.state.selectedSeed === idx;
+        html += '<button type="button" class="seed' + (on ? ' on' : '') + '" data-act="seed" data-i="' + idx + '">';
+        html += '<span class="thumb">' + MY.plantSVG(s.id) + '</span>';
+        html += '<b>' + MY.esc(s.name) + '</b><small>' + s.cost + '阳光</small></button>';
+      });
+      html += '</div>';
+      return html;
+    },
+    act: {
+      panel: function (el) {
+        view.panel = el.dataset.panel === 'garden' ? 'garden' : 'pet';
+        MY.render();
+      },
+      shop: function (el) {
+        var res = MY.onShop(el.dataset.id);
+        if (!res.ok) { needToast(res, '这只先等等'); return; }
+        if (res.bought) {
+          MY.toast('欢迎 ' + res.pet.name + ' 回家');
+          if (MY.ding) MY.ding();
+          if (MY.burst) MY.burst();
+        } else MY.toast(res.pet.name + ' 来陪你啦');
+        MY.render();
+      },
+      feed: function () {
+        var res = MY.feedPet();
+        if (!res.ok) { needToast(res, '先领养一只，它就来陪你'); return; }
+        MY.toast('吃饱一点，' + res.pet.name + ' 更有劲');
+        if (MY.ding) MY.ding();
+        if (res.levels) MY.toast(res.pet.name + ' 升到 Lv.' + MY.getPetData(res.pet.id).level);
+        MY.render();
+      },
+      play: function () {
+        var res = MY.playPet();
+        if (!res.ok) { needToast(res, '先领养一只，它就来陪你'); return; }
+        MY.toast(res.pet.name + ' 玩得很开心');
+        if (MY.ding) MY.ding();
+        MY.render();
+      },
+      seed: function (el) {
+        var res = MY.selectSeed(+el.dataset.i);
+        if (!res.ok) { needToast(res, '这颗种子先等等'); return; }
+        MY.render();
+      },
+      plant: function (el) {
+        var res = MY.plantAt(+el.dataset.i);
+        if (!res.ok) {
+          if (res.reason === 'noseed') MY.toast('先点一颗种子，再点空地');
+          else if (res.reason === 'occupied') MY.toast('这里已经长出来了');
+          else needToast(res, '先等等');
+          return;
+        }
+        MY.toast(res.seed.name + ' 种下了，花园亮了一格');
+        if (MY.ding) MY.ding();
+        MY.render();
+      }
+    }
+  };
+
+  function meter(name, pct, color, label) {
+    pct = Math.max(0, Math.min(100, pct || 0));
+    return '<div class="meter"><span>' + name + '</span><i><b style="width:' + pct + '%;background:' + color + '"></b></i><em>' + (label || Math.round(pct)) + '</em></div>';
+  }
+
+  MY.views = MY.views || {};
+  MY.views.park = view;
+})(window.MY = window.MY || {});
+
+
+/* ===== views/mainline.js ===== */
+/* 主线：人生主线、军规、难题五步、周六复盘、成长记录、能力雷达。 */
+(function (MY) {
+  'use strict';
+
+  var TABS = [
+    ['mainline', '主线'],
+    ['rules', '军规'],
+    ['workflow', '五步'],
+    ['review', '复盘'],
+    ['log', '记录'],
+    ['radar', '雷达']
+  ];
+
+  function isReviewTime(d) {
+    d = d || new Date();
+    return d.getDay() === 6 && d.getHours() >= 18;
+  }
+  function weekKey(d) {
+    d = d || new Date();
+    var day = (d.getDay() + 6) % 7;
+    var m = new Date(d);
+    m.setDate(d.getDate() - day);
+    return MY.ymd(m);
+  }
+  function radarSVG(vals) {
+    var cx = 150, cy = 132, r = 88, n = vals.length;
+    function pt(i, scale) {
+      var ang = -Math.PI / 2 + i * 2 * Math.PI / n;
+      return [cx + Math.cos(ang) * r * scale, cy + Math.sin(ang) * r * scale];
+    }
+    var rings = [0.25, 0.5, 0.75, 1].map(function (s) {
+      var d = [];
+      for (var i = 0; i < n; i++) {
+        var p = pt(i, s);
+        d.push((i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1));
+      }
+      return '<path d="' + d.join(' ') + ' Z" fill="none" stroke="rgba(62,230,255,.28)"/>';
+    }).join('');
+    var axes = '';
+    for (var i = 0; i < n; i++) {
+      var p = pt(i, 1);
+      axes += '<line x1="' + cx + '" y1="' + cy + '" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) + '" stroke="rgba(167,139,250,.45)"/>';
+    }
+    var poly = vals.map(function (v, i) {
+      var p = pt(i, v / 100);
+      return p[0].toFixed(1) + ',' + p[1].toFixed(1);
+    }).join(' ');
+    return '<svg class="radar" viewBox="0 0 300 270" role="img" aria-label="能力雷达">' + rings + axes +
+      '<polygon points="' + poly + '" fill="rgba(62,230,255,.28)" stroke="#3ee6ff" stroke-width="2"/></svg>';
+  }
+
+  var view = {
+    tab: 'mainline',
+    linkOpen: false,
+    render: function () {
+      var html = '<div class="seg wrap-seg">';
+      TABS.forEach(function (t) {
+        html += '<button type="button" class="' + (view.tab === t[0] ? 'on' : '') + '" data-act="tab" data-tab="' + t[0] + '">' + t[1] + '</button>';
+      });
+      html += '</div>';
+      if (this.tab === 'rules') html += rulesHtml();
+      else if (this.tab === 'workflow') html += wfHtml();
+      else if (this.tab === 'review') html += reviewHtml();
+      else if (this.tab === 'log') html += logHtml();
+      else if (this.tab === 'radar') html += radarHtml();
+      else html += mainHtml();
+      var soundOn = MY.state.system.sound !== false;
+      html += '<button type="button" class="link-quiet" data-act="sound-toggle">' + (soundOn ? '音效：开' : '音效：关') + '</button>';
+      return html;
+    }
+  };
+
+  function mainHtml() {
+    var sys = MY.state.system;
+    var ml = sys.mainline;
+    var total = (sys.yuanli.life || 0) + (sys.yuanli.drive || 0) + (sys.yuanli.learn || 0);
+    var lv = 1 + Math.floor(total / 300);
+    var pct = Math.min(100, Math.round((total % 300) / 300 * 100));
+    var html = '<section class="card">';
+    html += '<div class="kicker">我的主线 · 系统 ' + MY.esc(sys.version || 'v1.0') + '</div>';
+    html += '<h1>' + MY.esc(ml.title || '人生设计师') + '</h1>';
+    html += '<p class="decl">' + MY.nl(ml.declaration || MY.DECLARATION) + '</p>';
+    html += '<p class="fine">主线确立于 ' + MY.esc(ml.since || '') + '</p>';
+    ['life', 'drive', 'learn'].forEach(function (k) {
+      html += '<div class="ml-bar"><span style="color:' + MY.YL_COLOR[k] + '">' + MY.YL_NAME[k] + '</span>';
+      html += '<i><b style="width:' + Math.min(100, (sys.yuanli[k] || 0) / 3) + '%;background:' + MY.YL_COLOR[k] + '"></b></i>';
+      html += '<em style="color:' + MY.YL_COLOR[k] + '">' + (sys.yuanli[k] || 0) + '</em></div>';
+    });
+    html += '<div class="bar lv"><i style="width:' + pct + '%"></i></div>';
+    html += '<p class="fine">主线里程 Lv.' + lv + ' · 元力 ' + total + ' · 距下一级 ' + (300 - (total % 300)) + '</p>';
+    html += '<button type="button" class="btn-main" data-act="link-toggle">' + (view.linkOpen ? '收起梦想连线' : '今日梦想连线') + '</button>';
+    html += '<button type="button" class="btn-ghost" data-act="publish">叮！任务发布</button>';
+    html += '</section>';
+    if (view.linkOpen) html += linkHtml();
+    if (view.publishing) html += publishHtml();
+    return html;
+  }
+
+  function linkHtml() {
+    var tasks = MY.taskMap();
+    var doneIds = Object.keys(tasks).filter(function (id) { return tasks[id] && MY.YL[id]; });
+    var allIds = MY.ALL_TASKS.map(function (t) { return t.id; }).filter(function (id) { return MY.YL[id]; });
+    var missed = allIds.filter(function (id) { return !tasks[id]; });
+    var yl = { life: 0, drive: 0, learn: 0 };
+    var html = '<section class="card">';
+    html += '<div class="kicker">今日梦想连线 · ' + MY.ymd(new Date()) + '</div>';
+    html += '<p class="lead">今天做的这些，跟「人生设计师」有什么关系？</p>';
+    if (!doneIds.length) html += '<p>今天还没打卡，先去看看今天的菜谱吧。</p>';
+    doneIds.forEach(function (id) {
+      var m = MY.YL[id];
+      yl[m[0]] += 1;
+      var task = MY.taskById(id);
+      html += '<div class="link-row"><span class="tag" style="color:' + MY.YL_COLOR[m[0]] + '">' + MY.YL_NAME[m[0]] + '</span>';
+      html += '<div><b>' + MY.esc(task ? task.name : id) + '</b><small>' + MY.esc(m[1]) + '</small></div></div>';
+    });
+    if (missed.length) {
+      var cheer = MY.CHEER[new Date().getDate() % MY.CHEER.length];
+      html += '<p class="note">还有 ' + missed.length + ' 道菜没上桌<br>' + missed.map(function (id) {
+        var t = MY.taskById(id); return MY.esc(t ? t.name : id);
+      }).join(' · ') + '</p>';
+      html += '<p>' + MY.esc(cheer) + '</p>';
+    } else {
+      html += '<p class="lead">今天的菜全上齐了。元力满满！这就是人生设计师的一天。</p>';
+    }
+    html += '<p class="fine">这一屏是在看关系，元力在完成菜的时候已经记下了。</p>';
+    html += '</section>';
+    return html;
+  }
+
+  function publishHtml() {
+    var feast = MY.feastList();
+    var list = feast.length
+      ? feast.map(function (id) { var t = MY.taskById(id); return t ? t.name : id; }).join(' · ')
+      : '今天还没点菜，去今日大餐挑喜欢的菜';
+    return '<section class="card"><div class="kicker">叮！任务发布</div>' +
+      '<p>人生设计师 · 第 ' + (MY.state.system.vnum || 1) + ' 版系统</p>' +
+      '<p class="lead">' + MY.esc(list) + '</p>' +
+      '<p class="fine">做完一件，回来领一次「叮！奖励到账」。</p></section>';
+  }
+
+  function rulesHtml() {
+    var rules = MY.state.system.rules || [];
+    var html = '<section class="card"><div class="kicker">我的军规</div>';
+    html += '<h1>有所为，有所不为</h1>';
+    html += '<p class="fine">前三条是陈咏拟的草稿，等牧橒口述后修订。军规是筛选器，选择就不费力。</p>';
+    rules.forEach(function (r, i) {
+      html += '<div class="rule"><span class="no">' + (i + 1) + '</span><span>' + MY.esc(r.text) + '</span>';
+      html += r.draft ? '<em>待牧橒口述修订</em>' : '<em>' + MY.esc(r.by || '') + ' 定</em>';
+      html += '<button type="button" class="x" data-act="rule-del" data-id="' + MY.esc(r.id) + '" aria-label="去掉这条">×</button></div>';
+    });
+    html += '<div class="row-add"><input id="ruleInput" maxlength="24" placeholder="牧橒说一条，加进来">';
+    html += '<button type="button" class="btn-main slim" data-act="rule-add">立为军规</button></div></section>';
+    return html;
+  }
+
+  function wfHtml() {
+    var w = MY.state.system.workflow;
+    var html = '<section class="card"><div class="kicker">难题五步闯关</div>';
+    if (!w) {
+      html += '<h1>遇到难题走这五步</h1>';
+      html += '<p>每走一步领阳光，最后得到一张经验卡。<br>人生设计师不靠灵感，靠流程。</p>';
+      html += '<button type="button" class="btn-main" data-act="wf-new">开始一个难题</button></section>';
+    } else if (w.done) {
+      html += '<h1>这个难题已经走完了</h1><p class="lead">' + MY.esc(w.title) + '</p>';
+      html += '<button type="button" class="btn-main" data-act="wf-new">再来一个难题</button></section>';
+    } else {
+      var st = MY.WF_STEPS[w.step];
+      html += '<p class="fine">第 ' + (w.step + 1) + ' / 5 步</p><div class="chips">';
+      MY.WF_STEPS.forEach(function (s, i) {
+        html += '<span class="' + (i < w.step ? 'hit' : '') + (i === w.step ? ' now' : '') + '">' + (i < w.step ? '✓ ' : '') + s.n + '</span>';
+      });
+      html += '</div><h2>' + MY.esc(st.n) + '</h2><p>' + MY.esc(st.tip) + '</p>';
+      if (w.step === 0) html += '<input id="wfInput" maxlength="40" placeholder="我遇到的难题是……">';
+      else html += '<textarea id="wfInput" rows="3" placeholder="' + MY.esc(st.tip) + '"></textarea>';
+      html += '<button type="button" class="btn-main" data-act="wf-next">走这一步 · 领 ' + st.c + ' 阳光</button></section>';
+    }
+    var cards = MY.state.system.cards || [];
+    html += '<section class="card"><div class="kicker">我的经验卡 · ' + cards.length + '</div>';
+    if (!cards.length) html += '<p>还没有经验卡。走完一次五步闯关，这里会出现你的第一张。</p>';
+    cards.forEach(function (c) {
+      html += '<article class="exp"><b>' + MY.esc(c.title) + '</b><p>' + MY.nl(c.body || '') + '</p><small>' + MY.esc(c.date || '') + '</small></article>';
+    });
+    html += '</section>';
+    return html;
+  }
+
+  function reviewHtml() {
+    var sys = MY.state.system;
+    var key = weekKey();
+    var done = (sys.reviews || []).filter(function (r) { return r.week === key; })[0];
+    var html = '<section class="card"><div class="kicker">每周复盘卡 · 周六晚饭后</div>';
+    if (done) {
+      html += '<h1>本周复盘已完成</h1>';
+      html += '<p>牧橒签字：' + MY.esc(done.signKid) + '<br>陈咏签字：' + MY.esc(done.signDad) + '</p>';
+      html += '<p class="fine">系统已升级到 ' + MY.esc(done.after) + '</p>';
+    } else if (!isReviewTime()) {
+      var d = new Date();
+      var left = (6 - d.getDay() + 7) % 7;
+      html += '<h1>本周复盘 · 周六晚饭后开启</h1>';
+      html += '<p>' + (left === 0 ? '今天就是周六，吃完晚饭再来' : '还有 ' + left + ' 天') + '</p>';
+      html += '<p class="fine">复盘要一家人坐下来，慢慢说。</p>';
+    } else {
+      html += '<label class="q">1 · 这周我做对了什么？<textarea id="rvA" rows="2"></textarea></label>';
+      html += '<label class="q">2 · 什么花了时间但没用？<textarea id="rvB" rows="2"></textarea></label>';
+      html += '<label class="q">3 · 下次怎么改？<textarea id="rvC" rows="2"></textarea></label>';
+      html += '<label class="q">4 · 沉淀成哪条经验？<textarea id="rvD" rows="2"></textarea></label>';
+      html += '<div class="row2"><label class="q">牧橒签字<input id="rvK" maxlength="10"></label>';
+      html += '<label class="q">陈咏签字<input id="rvD2" maxlength="10"></label></div>';
+      html += '<button type="button" class="btn-main" data-act="rv-save">签字 · 升级系统</button>';
+    }
+    html += '</section>';
+    if (sys.reviews && sys.reviews.length) {
+      html += '<section class="card"><div class="kicker">复盘记录</div>';
+      sys.reviews.forEach(function (r) {
+        html += '<p><b>' + MY.esc(r.week) + '</b> ' + MY.esc(r.a || '') + ' <span class="fine">' + MY.esc(r.before) + ' → ' + MY.esc(r.after) + '</span></p>';
+      });
+      html += '</section>';
+    }
+    var patches = (sys.patches || []).slice().reverse();
+    html += '<section class="card"><div class="kicker">系统升级日志 · 当前 ' + MY.esc(sys.version || '') + '</div>';
+    patches.forEach(function (p) {
+      html += '<p class="patch"><b>' + MY.esc(p.v) + '</b> ' + MY.esc(p.note) + ' <span class="fine">' + MY.esc(p.date || '') + '</span></p>';
+    });
+    html += '<p class="fine">体系不是石碑，是导航。过时的删掉，新的补上。</p></section>';
+    return html;
+  }
+
+  function logHtml() {
+    var list = MY.logs();
+    var html = '<section class="card"><div class="kicker">成长记录</div>';
+    if (!list.length) html += '<p>还没有记录，完成第一道菜就会写在这里。</p>';
+    list.forEach(function (l) {
+      html += '<p class="log"><span>' + MY.esc(l && l.time) + '</span>' + MY.esc(l && l.text) + '</p>';
+    });
+    html += '</section>';
+    return html;
+  }
+
+  function radarHtml() {
+    var vals = MY.radarVals();
+    var html = '<section class="card"><div class="kicker">能力雷达</div>';
+    html += radarSVG(vals);
+    html += '<div class="radar-list">';
+    MY.CORE_ATTRS.forEach(function (a, i) {
+      html += '<p>' + a.icon + ' <b>' + MY.esc(a.key) + '</b> ' + MY.esc(a.desc) + '<em>' + vals[i] + '</em></p>';
+    });
+    html += '</div></section>';
+    return html;
+  }
+
+  view.act = {
+    tab: function (el) { view.tab = el.dataset.tab || 'mainline'; MY.render(); },
+    'link-toggle': function () { view.linkOpen = !view.linkOpen; MY.render(); },
+    publish: function () { view.publishing = !view.publishing; MY.render(); },
+    'sound-toggle': function () {
+      MY.state.system.sound = MY.state.system.sound === false;
+      MY.save();
+      if (MY.state.system.sound !== false && MY.ding) MY.ding();
+      MY.render();
+    },
+    'rule-add': function () {
+      var inp = document.getElementById('ruleInput');
+      var v = inp ? inp.value.trim() : '';
+      if (!v) { MY.toast('先说一句，再立规'); return; }
+      if (!Array.isArray(MY.state.system.rules)) MY.state.system.rules = [];
+      MY.state.system.rules.push({ id: 'r' + Date.now(), text: v.slice(0, 24), by: '牧橒', date: MY.ymd(new Date()) });
+      MY.save();
+      MY.toast('军规 +1 · 这是牧橒自己定的');
+      if (MY.ding) MY.ding();
+      MY.render();
+    },
+    'rule-del': function (el) {
+      MY.state.system.rules = (MY.state.system.rules || []).filter(function (r) { return r.id !== el.dataset.id; });
+      MY.save();
+      MY.render();
+    },
+    'wf-new': function () {
+      MY.state.system.workflow = { title: '', step: 0, vals: {}, date: MY.ymd(new Date()), done: false };
+      MY.save();
+      MY.render();
+    },
+    'wf-next': function () {
+      var w = MY.state.system.workflow;
+      if (!w || w.done) return;
+      var inp = document.getElementById('wfInput');
+      var v = inp ? inp.value.trim() : '';
+      if (!v) { MY.toast('写一句再走，设计师不跳步'); return; }
+      var st = MY.WF_STEPS[w.step];
+      if (w.step === 0) w.title = v;
+      if (!w.vals || typeof w.vals !== 'object') w.vals = {};
+      w.vals[st.k] = v;
+      MY.state.coins = MY.coins() + st.c;
+      MY.addLog('五步闯关「' + st.n + '」+' + st.c + ' 阳光');
+      w.step += 1;
+      if (w.step >= MY.WF_STEPS.length) {
+        w.done = true;
+        if (!Array.isArray(MY.state.system.cards)) MY.state.system.cards = [];
+        MY.state.system.cards.unshift({ title: w.title, body: w.vals.keep || '', date: MY.ymd(new Date()) });
+        if (!Array.isArray(MY.state.system.patches)) MY.state.system.patches = [];
+        MY.state.system.patches.push({ v: MY.state.system.version, date: MY.ymd(new Date()), note: '新增经验卡：' + w.title });
+        MY.toast('叮！等级提升 · 五步走完，经验卡到手');
+        if (MY.ding) MY.ding();
+        if (MY.burst) MY.burst();
+      } else {
+        if (MY.tone) MY.tone(660, 0.09, 0.12);
+        MY.toast('叮！第 ' + w.step + ' 步完成 · +' + st.c + ' 阳光');
+      }
+      MY.save();
+      MY.render();
+    },
+    'rv-save': function () {
+      var a = document.getElementById('rvA');
+      var b = document.getElementById('rvB');
+      var c = document.getElementById('rvC');
+      var d = document.getElementById('rvD');
+      var k = document.getElementById('rvK');
+      var p = document.getElementById('rvD2');
+      if (!a || !a.value.trim() || !k || !k.value.trim() || !p || !p.value.trim()) {
+        MY.toast('三个签字和填空都要有，复盘才算数');
+        return;
+      }
+      var sys = MY.state.system;
+      var before = sys.version;
+      sys.vnum = (sys.vnum || 1) + 1;
+      sys.version = 'v1.' + (sys.vnum - 1);
+      if (!Array.isArray(sys.reviews)) sys.reviews = [];
+      var rec = {
+        week: weekKey(), date: MY.ymd(new Date()),
+        a: a.value.trim(), b: b ? b.value.trim() : '', c: c ? c.value.trim() : '', d: d ? d.value.trim() : '',
+        signKid: k.value.trim(), signDad: p.value.trim(), before: before, after: sys.version
+      };
+      sys.reviews.unshift(rec);
+      if (!Array.isArray(sys.patches)) sys.patches = [];
+      sys.patches.push({ v: sys.version, date: rec.date, note: '周复盘升级：' + rec.c });
+      MY.save();
+      MY.toast('复盘完成 · 系统升级到 ' + sys.version);
+      if (MY.ding) MY.ding();
+      if (MY.burst) MY.burst();
+      MY.render();
+    }
+  };
+
+  MY.views = MY.views || {};
+  MY.views.mainline = view;
+})(window.MY = window.MY || {});
+
+
+/* ===== views/parent.js ===== */
+/* 家长视图：只读。不进底栏，不设密码。存档在这里进出。 */
+(function (MY) {
+  'use strict';
+
+  function stuck() {
+    var items = [];
+    var feast = MY.feastList();
+    var tasks = MY.taskMap();
+    var undone = feast.filter(function (id) { return !tasks[id]; });
+    if (!feast.length) items.push('今天还没点大餐');
+    else if (undone.length) {
+      items.push('大餐还剩 ' + undone.map(function (id) {
+        var t = MY.taskById(id);
+        return t ? t.name : id;
+      }).join('、'));
+    }
+    if (!MY.gushi.todayDone()) items.push('晨读今天还没打卡');
+    var owned = Array.isArray(MY.state.ownedPets) ? MY.state.ownedPets : [];
+    if (!owned.length) items.push('乐园还没有领养小伙伴');
+    owned.forEach(function (id) {
+      var pd = MY.getPetData(id);
+      var pet = MY.petById(id);
+      if (pd.hunger < 30) items.push((pet ? pet.name : '宠物') + ' 有点饿');
+    });
+    var lawn = Array.isArray(MY.state.lawn) ? MY.state.lawn : [];
+    var planted = lawn.some(function (c) { return !!c; });
+    if (!planted) items.push('花园还是空的');
+    var w = MY.state.system && MY.state.system.workflow;
+    if (w && !w.done && MY.WF_STEPS[w.step]) items.push('难题五步停在「' + MY.WF_STEPS[w.step].n + '」');
+    if (!items.length) items.push('今天没有卡住的地方，元力满满');
+    return items;
+  }
+
+  var view = {
+    render: function () {
+      var tasks = MY.taskMap();
+      var done = MY.ALL_TASKS.filter(function (t) { return !!tasks[t.id]; });
+      var html = '<div class="flow-top"><button type="button" class="back" data-go="today">← 回到今日</button><div class="flow-title">家长看看</div></div>';
+      html += '<p class="fine parent-note">这里只看，不改任务，也没有密码。</p>';
+      html += '<section class="card"><div class="kicker">连续打卡</div><p class="streak-num">' + (MY.state.streak || 1) + '<small>天</small></p>';
+      html += '<p class="fine">阳光 ' + MY.coins() + ' · 今天完成 ' + done.length + ' / ' + MY.ALL_TASKS.length + '</p></section>';
+      html += '<section class="card"><div class="kicker">今日完成</div><ul class="parent-list">';
+      MY.ALL_TASKS.forEach(function (t) {
+        var on = !!tasks[t.id];
+        html += '<li class="' + (on ? 'ok' : '') + '"><span>' + (on ? '✓' : '·') + '</span><b>' + MY.esc(t.name) + '</b><small>' + MY.esc(t.dish) + '</small></li>';
+      });
+      html += '</ul></section>';
+      html += '<section class="card"><div class="kicker">哪里卡住</div><ul class="stuck">';
+      stuck().forEach(function (line) { html += '<li>' + MY.esc(line) + '</li>'; });
+      html += '</ul></section>';
+      var gs = MY.gushi.stats();
+      html += '<section class="card"><div class="kicker">晨读</div><p>第 ' + gs.day + ' 天 · 已掌握 ' + gs.mastered + '/25 · ' +
+        (gs.todayDone ? '今日已打卡' : '今日还没打卡') + '</p></section>';
+      html += '<section class="card archive"><div class="kicker">存档</div>';
+      html += '<p>导出的 JSON 会带上全部字段。认不出的旧字段也会原样留下，接回来时不会被清掉。</p>';
+      html += '<button type="button" class="btn-main" data-act="export-archive">导出存档</button>';
+      html += '<button type="button" class="btn-ghost" data-act="import-pick">导入存档</button>';
+      html += '<input id="importFile" class="file" type="file" accept="application/json,.json">';
+      html += '</section>';
+      return html;
+    },
+    mount: function () {
+      var input = document.getElementById('importFile');
+      if (!input || input.dataset.bound) return;
+      input.dataset.bound = '1';
+      input.addEventListener('change', function () {
+        var file = input.files && input.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            var text = String(reader.result || '').replace(/^\uFEFF/, '');
+            MY.importArchive(JSON.parse(text));
+            MY.toast('存档接回来了，原来的字段都还在');
+            if (MY.ding) MY.ding();
+            MY.render();
+          } catch (e) {
+            MY.toast((e && e.message && e.message !== 'bad' && e.message !== 'empty') ? e.message : '这份存档打不开，原来的进度还在');
+          }
+        };
+        reader.readAsText(file);
+      });
+    },
+    act: {
+      'export-archive': function () {
+        var data = MY.exportArchive();
+        var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = '牧橒存档_' + MY.ymd(new Date()) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+        MY.toast('存档已导出，收好这个 JSON');
+      },
+      'import-pick': function () {
+        var input = document.getElementById('importFile');
+        if (input) input.click();
+      }
+    }
+  };
+
+  MY.views = MY.views || {};
+  MY.views.parent = view;
+})(window.MY = window.MY || {});
+
+
+/* ===== app.js ===== */
+/* 壳子：底栏四项，大餐和家长视图从流程进出。 */
+(function (MY) {
+  'use strict';
+
+  var toastTimer = null;
+  MY.route = 'today';
+  MY.pendingRecite = null;
+
+  function renderChrome() {
+    var age = MY.age();
+    var top = document.getElementById('top');
+    if (top) {
+      top.innerHTML = '<div class="brand"><div class="brand-name">陈牧橒</div><div class="brand-sub">' +
+        age.years + '岁 · 连续 ' + (MY.state.streak || 1) + ' 天</div></div>' +
+        '<div class="coin"><b>' + MY.coins() + '</b><span>阳光</span></div>';
+    }
+    var flow = MY.route === 'feast' || MY.route === 'parent';
+    var bar = document.getElementById('tabbar');
+    if (bar) bar.hidden = flow;
+    document.body.dataset.route = MY.route;
+    document.querySelectorAll('#tabbar [data-go]').forEach(function (btn) {
+      var on = btn.dataset.go === MY.route;
+      btn.classList.toggle('on', on);
+      if (on) btn.setAttribute('aria-current', 'page');
+      else btn.removeAttribute('aria-current');
+    });
+  }
+
+  MY.toast = function (msg) {
+    var el = document.getElementById('toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2400);
+  };
+
+  MY.burst = function () {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var box = document.createElement('div');
+    box.className = 'burst';
+    var em = ['✨', '🌟', '💛', '🌸', '⭐'];
+    for (var i = 0; i < 12; i++) {
+      var s = document.createElement('span');
+      s.textContent = em[i % em.length];
+      s.style.left = (12 + Math.random() * 76) + '%';
+      s.style.animationDelay = (Math.random() * 0.12) + 's';
+      box.appendChild(s);
+    }
+    document.body.appendChild(box);
+    setTimeout(function () { box.remove(); }, 1100);
+  };
+
+  MY.render = function () {
+    renderChrome();
+    var view = MY.views[MY.route] || MY.views.today;
+    var root = document.getElementById('view');
+    try {
+      root.innerHTML = view.render();
+      if (view.mount) view.mount();
+    } catch (err) {
+      console.error(err);
+      if (window.showBootError) window.showBootError(err);
+      if (root) root.innerHTML = '<section class="card"><h2>这一页没展开</h2><p>上面有出错原因。回到今日再试一次。</p><button type="button" class="btn-main" data-go="today">回到今日</button></section>';
+    }
+  };
+
+  MY.go = function (route) {
+    if (!MY.views[route]) route = 'today';
+    if (route !== MY.route && MY.views[MY.route] && MY.views[MY.route].unmount) MY.views[MY.route].unmount();
+    MY.route = route;
+    if (route === 'morning' && MY.views.morning.takeAuto) MY.views.morning.takeAuto();
+    MY.render();
+    try { window.scrollTo(0, 0); } catch (e) {}
+  };
+
+  document.body.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-go],[data-act]');
+    if (!el || el.disabled) return;
+    if (el.dataset.go && !el.dataset.act) {
+      MY.go(el.dataset.go);
+      return;
+    }
+    var act = el.dataset.act;
+    if (!act) return;
+    var view = MY.views[MY.route];
+    var fn = view && view.act && view.act[act];
+    if (fn) fn(el, e);
+  });
+
+  document.body.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target && e.target.id === 'ruleInput') {
+      var fn = MY.views.mainline && MY.views.mainline.act['rule-add'];
+      if (fn) fn();
+    }
+    if (e.key === 'Enter' && e.target && e.target.id === 'wfInput' && MY.state.system.workflow && MY.state.system.workflow.step === 0) {
+      var next = MY.views.mainline && MY.views.mainline.act['wf-next'];
+      if (next) next();
+    }
+  });
+
+  MY.render();
+  if (MY.storageOk === false && window.showBootError) {
+    var storageMsg = '浏览器没有放开本地存档，这次的进度只留在当前页面里，刷新后可能要重来。';
+    if (MY.storageError && MY.storageError.message) storageMsg += '\n' + MY.storageError.name + ': ' + MY.storageError.message;
+    window.showBootError(storageMsg, '本地存档没写上');
+  }
+})(window.MY = window.MY || {});
+
+
+} catch (err) {
+  if (window.showBootError) window.showBootError(err);
+}
+</script>
+</body>
+</html>
