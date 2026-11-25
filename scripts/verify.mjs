@@ -464,6 +464,75 @@ async function main() {
   }, oldGushi);
   check('old gushi import', gushiRes.extra === 'from-old' && gushiRes.note === 'keep-v1' && gushiRes.xp === 15);
 
+  const distFile = 'file://' + path.join(root, 'dist/index.html');
+  const downloaded = path.join('/tmp', 'muyun-downloaded-preview.html');
+  fs.copyFileSync(path.join(root, 'dist/index.html'), downloaded);
+  fs.writeFileSync(downloaded + ':Zone.Identifier', '[ZoneTransfer]\r\nZoneId=3\r\nHostUrl=about:internet\r\n');
+  const downloadedUrl = 'file://' + downloaded;
+
+  const filePage = await browser.newPage();
+  const fileErrors = [];
+  filePage.on('pageerror', function (err) { fileErrors.push(err.message); });
+  await filePage.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+  await filePage.goto(distFile, { waitUntil: 'load' });
+  const fileOk = await filePage.evaluate(function () {
+    var box = document.getElementById('boot-error');
+    return {
+      text: document.body.innerText,
+      hidden: !box || box.hidden,
+      coins: window.MY && window.MY.coins ? window.MY.coins() : null,
+      help: document.getElementById('static-help')
+    };
+  });
+  check('file:// renders', fileOk.text.indexOf('人生设计师') >= 0 && fileOk.coins === 100, fileOk.text.slice(0, 80));
+  check('file:// no boot error', fileOk.hidden === true && !fileOk.help);
+  check('file:// no pageerror', fileErrors.length === 0, fileErrors.join(' | '));
+  await tap(filePage, '[data-act=open-feast]');
+  const fileFeast = await filePage.evaluate(function () { return document.body.innerText; });
+  check('file:// feast', fileFeast.indexOf('招牌必点') >= 0 && fileFeast.indexOf('经典毛肚') >= 0);
+  await filePage.addScriptTag({ content: 'throw new Error("故意抛出用来测试");' }).catch(function () {});
+  await new Promise(function (r) { setTimeout(r, 50); });
+  const afterThrow = await filePage.evaluate(function () {
+    return {
+      err: document.getElementById('boot-error').innerText,
+      still: document.body.innerText.indexOf('招牌必点') >= 0
+    };
+  });
+  check('thrown error is visible', afterThrow.err.indexOf('故意抛出用来测试') >= 0 && afterThrow.still);
+  await filePage.close();
+
+  const blocked = await browser.newPage();
+  await blocked.evaluateOnNewDocument(function () {
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      get: function () { throw new DOMException('localStorage blocked', 'SecurityError'); }
+    });
+  });
+  await blocked.setViewport({ width: 390, height: 844 });
+  await blocked.goto(downloadedUrl, { waitUntil: 'load' });
+  const blockedInfo = await blocked.evaluate(function () {
+    return {
+      text: document.body.innerText,
+      storageOk: window.MY && window.MY.storageOk,
+      coins: window.MY && window.MY.coins ? window.MY.coins() : null,
+      errHidden: document.getElementById('boot-error').hidden
+    };
+  });
+  console.log('storage blocked', JSON.stringify({ storageOk: blockedInfo.storageOk, coins: blockedInfo.coins, errHidden: blockedInfo.errHidden }));
+  check('file:// storage throw still shows today', blockedInfo.text.indexOf('人生设计师') >= 0 && blockedInfo.coins === 100);
+  check('file:// storage throw is not silent', blockedInfo.errHidden === false && blockedInfo.text.indexOf('本地存档没写上') >= 0);
+  check('file:// storage throw keeps memory', blockedInfo.storageOk === false);
+  await blocked.close();
+
+  const quiet = await browser.newPage();
+  await quiet.setJavaScriptEnabled(false);
+  await quiet.setViewport({ width: 390, height: 844 });
+  await quiet.goto(distFile, { waitUntil: 'load' });
+  const quietText = await quiet.evaluate(function () { return document.body.innerText; });
+  check('file:// without script shows today', quietText.indexOf('人生设计师') >= 0 && quietText.indexOf('空山不见人') >= 0 && quietText.indexOf('解除锁定') >= 0);
+  check('file:// noscript', quietText.indexOf('没有运行脚本') >= 0);
+  await quiet.close();
+
   await browser.close();
   server.close();
   if (fail.length) {

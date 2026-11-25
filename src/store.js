@@ -4,6 +4,27 @@
 
   var KEY = 'muyang_v6';
   MY.STORAGE_KEYS = [KEY, 'gushi337_v2', 'gushi337_v1'];
+  MY.storageOk = true;
+
+  function markStorage(err) {
+    MY.storageOk = false;
+    MY.storageError = err || MY.storageError || null;
+  }
+  function storageGet(key) {
+    try {
+      if (!window.localStorage) { markStorage(); return null; }
+      return window.localStorage.getItem(key);
+    } catch (err) { markStorage(err); return null; }
+  }
+  function storageSet(key, value) {
+    try {
+      if (!window.localStorage) { markStorage(); return false; }
+      window.localStorage.setItem(key, value);
+      return true;
+    } catch (err) { markStorage(err); return false; }
+  }
+  MY.storageGet = storageGet;
+  MY.storageSet = storageSet;
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   MY.pad = pad;
@@ -104,7 +125,7 @@
   }
 
   function save() {
-    localStorage.setItem(KEY, JSON.stringify(MY.state));
+    storageSet(KEY, JSON.stringify(MY.state));
   }
   MY.save = save;
 
@@ -112,7 +133,7 @@
     var s = null;
     var dirty = false;
     try {
-      var raw = localStorage.getItem(KEY);
+      var raw = storageGet(KEY);
       if (raw) s = JSON.parse(raw);
     } catch (e) { s = null; }
     if (!s || typeof s !== 'object' || Array.isArray(s)) {
@@ -377,8 +398,15 @@
     save();
     if (MY.gushi && MY.gushi.persist) MY.gushi.persist();
     var out = { format: 'muyun-archive-v1', exportedAt: new Date().toISOString() };
+    if (MY.state) {
+      try { out[KEY] = JSON.parse(JSON.stringify(MY.state)); } catch (e) { out[KEY] = MY.state; }
+    }
+    if (MY.gushi && MY.gushi.snapshot) {
+      try { out.gushi337_v2 = JSON.parse(JSON.stringify(MY.gushi.snapshot())); } catch (e) {}
+    }
     MY.STORAGE_KEYS.forEach(function (k) {
-      var raw = localStorage.getItem(k);
+      if (out[k] != null) return;
+      var raw = storageGet(k);
       if (raw == null) return;
       try { out[k] = JSON.parse(raw); }
       catch (e) { out[k + '_raw'] = raw; }
@@ -404,7 +432,11 @@
     }
     var keys = Object.keys(bag);
     if (!keys.length) throw new Error('empty');
-    keys.forEach(function (k) { localStorage.setItem(k, JSON.stringify(bag[k])); });
+    var wrote = 0;
+    keys.forEach(function (k) {
+      if (storageSet(k, JSON.stringify(bag[k]))) wrote += 1;
+    });
+    if (!wrote) throw new Error('存档认出来了，但这台浏览器没有把它写进去');
     load();
     if (MY.gushi && MY.gushi.reload) MY.gushi.reload();
     return MY.state;

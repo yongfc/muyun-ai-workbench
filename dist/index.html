@@ -418,6 +418,12 @@ input, textarea {
 body[data-route="feast"] .toast,
 body[data-route="parent"] .toast { bottom: 24px; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.boot-error { border-color: rgba(255, 122, 200, 0.85); color: #ffe4f3; }
+.boot-error[hidden] { display: none; }
+.boot-error b { display: block; color: #ff7ac8; margin-bottom: 6px; }
+.boot-error pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 0; color: #ffe4f3; }
+.static-help { color: var(--gd); }
+a.btn-main { display: flex; align-items: center; justify-content: center; text-decoration: none; }
 .burst { position: fixed; inset: 0; pointer-events: none; z-index: 35; }
 .burst span { position: absolute; top: 42%; font-size: 22px; animation: floatUp 1s ease-out forwards; }
 @keyframes bob { 50% { transform: translateY(-6px); } }
@@ -437,16 +443,71 @@ body[data-route="parent"] .toast { bottom: 24px; }
 </head>
 <body>
 <div class="wrap">
-  <header class="top" id="top"></header>
-  <main id="view"></main>
+  <div id="boot-error" class="card boot-error" hidden></div>
+  <header class="top" id="top">
+    <div class="brand">
+      <div class="brand-name">陈牧橒</div>
+      <div class="brand-sub">今日 · 牧橒成长工作台</div>
+    </div>
+    <div class="coin"><b>—</b><span>阳光</span></div>
+  </header>
+  <main id="view">
+    <section class="card">
+      <div class="kicker">我的主线</div>
+      <h1>人生设计师</h1>
+      <p class="decl">我是陈牧橒，人生设计师。<br>我不只想设计房子和衣服，我要设计我自己的人生。</p>
+      <p class="fine static-help">若点了没反应：在这个文件上右键 → 属性 → 勾选「解除锁定」，再双击打开。</p>
+    </section>
+    <section class="card">
+      <div class="kicker">今日还剩</div>
+      <p class="lead">今天的菜还没点。十三道菜都在菜单里，想做哪件点哪件。</p>
+      <p class="fine">连续打卡从打开这一页开始算。晨读是四年级上的 25 首。</p>
+    </section>
+    <details class="card quote" open>
+      <summary>今日一句</summary>
+      <p class="poem-line">空山不见人，<br>但闻人语响。</p>
+      <p class="fine">—— 唐·王维《鹿柴》</p>
+    </details>
+    <p class="fine static-help" id="static-help">开始大餐、晨读、领养和存档都在这一页里。如果点了没有反应，多半是浏览器拦住了从聊天下载的脚本：在文件上点右键，选属性，勾选最下面的「解除锁定」，确定后重新双击打开。</p>
+    <a class="btn-main" href="#static-help">开始大餐</a>
+  </main>
+  <noscript>
+    <section class="card">
+      <p>浏览器没有运行脚本。上面的今日页可以看。点餐、番茄钟、晨读记录和存档，要允许这个文件运行脚本之后才会动。</p>
+    </section>
+  </noscript>
 </div>
 <nav class="tabbar" id="tabbar" aria-label="孩子端">
-  <button type="button" data-go="today"><span aria-hidden="true">☀️</span>今日</button>
+  <button type="button" class="on" aria-current="page" data-go="today"><span aria-hidden="true">☀️</span>今日</button>
   <button type="button" data-go="morning"><span aria-hidden="true">📖</span>晨读</button>
   <button type="button" data-go="park"><span aria-hidden="true">🐾</span>乐园</button>
   <button type="button" data-go="mainline"><span aria-hidden="true">🧭</span>主线</button>
 </nav>
 <div class="toast" id="toast" role="status"></div>
+<script>
+window.showBootError = function (err, title) {
+  var box = document.getElementById('boot-error');
+  if (!box) return;
+  var msg = '';
+  if (err && err.stack) msg = String(err.stack);
+  else if (err && err.message) msg = String(err.message);
+  else msg = String(err || '未知错误');
+  box.hidden = false;
+  box.textContent = '';
+  var heading = document.createElement('b');
+  heading.textContent = title || '脚本没有顺利跑完';
+  var pre = document.createElement('pre');
+  pre.textContent = msg;
+  box.appendChild(heading);
+  box.appendChild(pre);
+};
+window.onerror = function (message, source, line, col, err) {
+  window.showBootError(err || (String(message) + (line ? '（第 ' + line + ' 行）' : '')));
+};
+window.addEventListener('unhandledrejection', function (ev) {
+  window.showBootError(ev && ev.reason ? ev.reason : ev);
+});
+</script>
 
 
 
@@ -461,6 +522,7 @@ body[data-route="parent"] .toast { bottom: 24px; }
 
 
 <script>
+try {
 
 /* ===== data/tasks.js ===== */
 /* 任务、能力维度、生日。
@@ -1403,6 +1465,27 @@ function petSVG(type,level){
 
   var KEY = 'muyang_v6';
   MY.STORAGE_KEYS = [KEY, 'gushi337_v2', 'gushi337_v1'];
+  MY.storageOk = true;
+
+  function markStorage(err) {
+    MY.storageOk = false;
+    MY.storageError = err || MY.storageError || null;
+  }
+  function storageGet(key) {
+    try {
+      if (!window.localStorage) { markStorage(); return null; }
+      return window.localStorage.getItem(key);
+    } catch (err) { markStorage(err); return null; }
+  }
+  function storageSet(key, value) {
+    try {
+      if (!window.localStorage) { markStorage(); return false; }
+      window.localStorage.setItem(key, value);
+      return true;
+    } catch (err) { markStorage(err); return false; }
+  }
+  MY.storageGet = storageGet;
+  MY.storageSet = storageSet;
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   MY.pad = pad;
@@ -1503,7 +1586,7 @@ function petSVG(type,level){
   }
 
   function save() {
-    localStorage.setItem(KEY, JSON.stringify(MY.state));
+    storageSet(KEY, JSON.stringify(MY.state));
   }
   MY.save = save;
 
@@ -1511,7 +1594,7 @@ function petSVG(type,level){
     var s = null;
     var dirty = false;
     try {
-      var raw = localStorage.getItem(KEY);
+      var raw = storageGet(KEY);
       if (raw) s = JSON.parse(raw);
     } catch (e) { s = null; }
     if (!s || typeof s !== 'object' || Array.isArray(s)) {
@@ -1776,8 +1859,15 @@ function petSVG(type,level){
     save();
     if (MY.gushi && MY.gushi.persist) MY.gushi.persist();
     var out = { format: 'muyun-archive-v1', exportedAt: new Date().toISOString() };
+    if (MY.state) {
+      try { out[KEY] = JSON.parse(JSON.stringify(MY.state)); } catch (e) { out[KEY] = MY.state; }
+    }
+    if (MY.gushi && MY.gushi.snapshot) {
+      try { out.gushi337_v2 = JSON.parse(JSON.stringify(MY.gushi.snapshot())); } catch (e) {}
+    }
     MY.STORAGE_KEYS.forEach(function (k) {
-      var raw = localStorage.getItem(k);
+      if (out[k] != null) return;
+      var raw = storageGet(k);
       if (raw == null) return;
       try { out[k] = JSON.parse(raw); }
       catch (e) { out[k + '_raw'] = raw; }
@@ -1803,7 +1893,11 @@ function petSVG(type,level){
     }
     var keys = Object.keys(bag);
     if (!keys.length) throw new Error('empty');
-    keys.forEach(function (k) { localStorage.setItem(k, JSON.stringify(bag[k])); });
+    var wrote = 0;
+    keys.forEach(function (k) {
+      if (storageSet(k, JSON.stringify(bag[k]))) wrote += 1;
+    });
+    if (!wrote) throw new Error('存档认出来了，但这台浏览器没有把它写进去');
     load();
     if (MY.gushi && MY.gushi.reload) MY.gushi.reload();
     return MY.state;
@@ -1882,9 +1976,9 @@ function petSVG(type,level){
   function load() {
     var base = blank();
     try {
-      var raw = localStorage.getItem(KEY);
+      var raw = (MY.storageGet ? MY.storageGet(KEY) : localStorage.getItem(KEY));
       if (!raw) {
-        var old = localStorage.getItem(KEY1);
+        var old = (MY.storageGet ? MY.storageGet(KEY1) : localStorage.getItem(KEY1));
         if (old) return Object.assign(base, JSON.parse(old));
         return base;
       }
@@ -1892,7 +1986,11 @@ function petSVG(type,level){
     } catch (e) { return base; }
   }
   function persist() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    try {
+      var json = JSON.stringify(state);
+      if (MY.storageSet) MY.storageSet(KEY, json);
+      else localStorage.setItem(KEY, json);
+    } catch (e) {}
   }
   function reload() {
     state = load();
@@ -2269,6 +2367,7 @@ function petSVG(type,level){
   MY.gushi = {
     reload: reload,
     persist: persist,
+    snapshot: function () { return state; },
     stats: stats,
     deck: deckToday,
     poem: byId,
@@ -3638,7 +3737,7 @@ function petSVG(type,level){
             if (MY.ding) MY.ding();
             MY.render();
           } catch (e) {
-            MY.toast('这份存档打不开，原来的进度还在');
+            MY.toast((e && e.message && e.message !== 'bad' && e.message !== 'empty') ? e.message : '这份存档打不开，原来的进度还在');
           }
         };
         reader.readAsText(file);
@@ -3732,7 +3831,8 @@ function petSVG(type,level){
       if (view.mount) view.mount();
     } catch (err) {
       console.error(err);
-      root.innerHTML = '<section class="card"><h2>这一页没展开</h2><p>回到今日再试一次。</p><button type="button" class="btn-main" data-go="today">回到今日</button></section>';
+      if (window.showBootError) window.showBootError(err);
+      if (root) root.innerHTML = '<section class="card"><h2>这一页没展开</h2><p>上面有出错原因。回到今日再试一次。</p><button type="button" class="btn-main" data-go="today">回到今日</button></section>';
     }
   };
 
@@ -3771,9 +3871,17 @@ function petSVG(type,level){
   });
 
   MY.render();
+  if (MY.storageOk === false && window.showBootError) {
+    var storageMsg = '浏览器没有放开本地存档，这次的进度只留在当前页面里，刷新后可能要重来。';
+    if (MY.storageError && MY.storageError.message) storageMsg += '\n' + MY.storageError.name + ': ' + MY.storageError.message;
+    window.showBootError(storageMsg, '本地存档没写上');
+  }
 })(window.MY = window.MY || {});
 
 
+} catch (err) {
+  if (window.showBootError) window.showBootError(err);
+}
 </script>
 </body>
 </html>

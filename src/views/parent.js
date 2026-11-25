@@ -75,7 +75,7 @@
             if (MY.ding) MY.ding();
             MY.render();
           } catch (e) {
-            MY.toast('这份存档打不开，原来的进度还在');
+            MY.toast((e && e.message && e.message !== 'bad' && e.message !== 'empty') ? e.message : '这份存档打不开，原来的进度还在');
           }
         };
         reader.readAsText(file);

@@ -39,9 +39,9 @@
   function load() {
     var base = blank();
     try {
-      var raw = localStorage.getItem(KEY);
+      var raw = (MY.storageGet ? MY.storageGet(KEY) : localStorage.getItem(KEY));
       if (!raw) {
-        var old = localStorage.getItem(KEY1);
+        var old = (MY.storageGet ? MY.storageGet(KEY1) : localStorage.getItem(KEY1));
         if (old) return Object.assign(base, JSON.parse(old));
         return base;
       }
@@ -49,7 +49,11 @@
     } catch (e) { return base; }
   }
   function persist() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    try {
+      var json = JSON.stringify(state);
+      if (MY.storageSet) MY.storageSet(KEY, json);
+      else localStorage.setItem(KEY, json);
+    } catch (e) {}
   }
   function reload() {
     state = load();
@@ -426,6 +430,7 @@
   MY.gushi = {
     reload: reload,
     persist: persist,
+    snapshot: function () { return state; },
     stats: stats,
     deck: deckToday,
     poem: byId,

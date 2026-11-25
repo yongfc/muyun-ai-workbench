@@ -407,6 +407,12 @@ input, textarea {
 body[data-route="feast"] .toast,
 body[data-route="parent"] .toast { bottom: 24px; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.boot-error { border-color: rgba(255, 122, 200, 0.85); color: #ffe4f3; }
+.boot-error[hidden] { display: none; }
+.boot-error b { display: block; color: #ff7ac8; margin-bottom: 6px; }
+.boot-error pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 0; color: #ffe4f3; }
+.static-help { color: var(--gd); }
+a.btn-main { display: flex; align-items: center; justify-content: center; text-decoration: none; }
 .burst { position: fixed; inset: 0; pointer-events: none; z-index: 35; }
 .burst span { position: absolute; top: 42%; font-size: 22px; animation: floatUp 1s ease-out forwards; }
 @keyframes bob { 50% { transform: translateY(-6px); } }

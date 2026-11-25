@@ -22,7 +22,7 @@ scripts.forEach(function (rel) {
 bundle = bundle.replace(/<\/script/gi, '<\\/script');
 const note = '<!-- 牧橒成长工作台预览。用浏览器直接打开本文件即可，无需联网。源码在 src/，重新构建：node scripts/build.mjs 。乐园这一期是平面形象，没有内嵌 GLB。 -->\n';
 html = html.replace('<!DOCTYPE html>', '<!DOCTYPE html>\n' + note);
-html = html.replace('</body>', '<script>\n' + bundle + '\n</script>\n</body>');
+html = html.replace('</body>', '<script>\ntry {\n' + bundle + '\n} catch (err) {\n  if (window.showBootError) window.showBootError(err);\n}\n</script>\n</body>');
 
 const dist = path.join(root, 'dist');
 fs.mkdirSync(dist, { recursive: true });

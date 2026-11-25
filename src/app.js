@@ -60,7 +60,8 @@
       if (view.mount) view.mount();
     } catch (err) {
       console.error(err);
-      root.innerHTML = '<section class="card"><h2>这一页没展开</h2><p>回到今日再试一次。</p><button type="button" class="btn-main" data-go="today">回到今日</button></section>';
+      if (window.showBootError) window.showBootError(err);
+      if (root) root.innerHTML = '<section class="card"><h2>这一页没展开</h2><p>上面有出错原因。回到今日再试一次。</p><button type="button" class="btn-main" data-go="today">回到今日</button></section>';
     }
   };
 
@@ -99,4 +100,9 @@
   });
 
   MY.render();
+  if (MY.storageOk === false && window.showBootError) {
+    var storageMsg = '浏览器没有放开本地存档，这次的进度只留在当前页面里，刷新后可能要重来。';
+    if (MY.storageError && MY.storageError.message) storageMsg += '\n' + MY.storageError.name + ': ' + MY.storageError.message;
+    window.showBootError(storageMsg, '本地存档没写上');
+  }
 })(window.MY = window.MY || {});
