@@ -530,6 +530,7 @@ async function main() {
   await quiet.goto(distFile, { waitUntil: 'load' });
   const quietText = await quiet.evaluate(function () { return document.body.innerText; });
   check('file:// without script shows today', quietText.indexOf('人生设计师') >= 0 && quietText.indexOf('空山不见人') >= 0 && quietText.indexOf('解除锁定') >= 0);
+  check('file:// plain banner without css dependency', quietText.indexOf('不靠页面样式') >= 0);
   check('file:// noscript', quietText.indexOf('没有运行脚本') >= 0);
   await quiet.close();
 

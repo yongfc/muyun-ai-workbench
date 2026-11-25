@@ -14,7 +14,9 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--ink); }
+html, body { margin: 0; background-color: #070914; color: #eef6ff; }
+html, body { background-color: var(--bg); color: var(--ink); }
+html { color-scheme: dark; }
 body {
   min-height: 100%;
   background:
