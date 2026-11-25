@@ -194,7 +194,7 @@ async function main() {
     };
   });
   check('tabs', home.tabs.join(',') === '今日,晨读,乐园,主线', home.tabs.join(','));
-  check('today copy', home.text.indexOf('人生设计师') >= 0 && home.text.indexOf('开始大餐') >= 0 && home.text.indexOf('今日一句') >= 0);
+  check('today copy', home.text.indexOf('人生设计师') >= 0 && home.text.indexOf('开始大餐') >= 0 && home.text.indexOf('示例课表') >= 0);
   check('no feast tab', home.tabs.join('').indexOf('大餐') < 0);
   await fits(page, 'today');
 

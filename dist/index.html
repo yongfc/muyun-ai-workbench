@@ -49,9 +49,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
 }
 body[data-route="today"] .wrap,
 body[data-route="feast"] .wrap { width: min(1080px, 100%); }
-body[data-route="today"] .wrap { padding: 6px 10px calc(68px + env(safe-area-inset-bottom)); }
-body[data-route="today"] .top { margin-bottom: 6px; }
-body[data-route="today"] .brand-name { font-size: 18px; }
+body[data-route="today"] .wrap { padding: 4px 8px calc(64px + env(safe-area-inset-bottom)); }
+body[data-route="today"] .top { display: none; }
 body[data-route="feast"] .wrap,
 body[data-route="parent"] .wrap { padding-bottom: 28px; }
 .top {
@@ -446,60 +445,86 @@ a.btn-main { display: flex; align-items: center; justify-content: center; text-d
   .pomo-time { font-size: 60px; }
 }
 
-/* 今日信息大屏：只压缩这一页，整页仍可滚动 */
-.board { display: grid; gap: 6px; }
-.board .tile {
+/* 今日工作室：作品墙填中间。整页不锁滚动。 */
+.studio { display: grid; gap: 6px; }
+.studio-id, .side-card {
   background: linear-gradient(180deg, rgba(20, 28, 62, 0.94), rgba(10, 14, 32, 0.92));
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 8px 10px;
 }
-.board h1 { font-size: 22px; margin: 0; }
-.board .hero { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
-.board .hero p { margin: 2px 0 0; font-size: 13px; line-height: 1.35; }
-.board .streak { text-align: right; min-width: 92px; }
-.board .streak b { display: block; font-size: 28px; line-height: 1; color: var(--gd); }
-.board .streak span, .board .streak small { display: block; color: var(--muted); font-size: 11px; }
-.board .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 8px; }
-.board .metric { text-align: center; background: rgba(255,255,255,.04); border-radius: 10px; padding: 4px 2px; }
-.board .metric b { display: block; color: var(--c, var(--gd)); font-size: 16px; }
-.board .metric span { color: var(--muted); font-size: 11px; }
-.board .metric.sun b { color: var(--gd); }
-.board .prog-top, .board .gushi-line, .board .remain-line { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin: 0; font-size: 13px; }
-.board .remain-line { color: var(--gd); margin-top: 4px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display: block; }
-.board .gushi-line { color: var(--muted); margin-top: 2px; }
-.board .dots { display: flex; gap: 4px; margin: 6px 0 2px; }
-.board .dots i { flex: 1; height: 8px; border-radius: 99px; background: rgba(62,230,255,.28); }
-.board .dots i.picked { background: var(--pk); }
-.board .dots i.done { background: var(--ok); }
-.board .poem-line {
-  font-size: 15px;
-  line-height: 1.35;
-  margin: 2px 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.studio-when { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.studio-when b { font-size: 22px; color: var(--cy); font-variant-numeric: tabular-nums; }
+.studio-when span { color: var(--muted); font-size: 12px; }
+.studio-who { margin: 2px 0 0; font-size: 14px; font-weight: 800; }
+.studio-focus { margin: 0; color: var(--gd); font-size: 13px; }
+.studio-stats { display: flex; gap: 12px; margin-top: 4px; font-size: 12px; color: var(--muted); }
+.studio-stats b { color: var(--gd); font-size: 16px; margin-right: 3px; }
+.studio-yl { margin: 2px 0 0; font-size: 12px; color: var(--cy); }
+.wall {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  align-content: stretch;
 }
-.board .fine { margin: 0; }
-.board .board-go { margin-top: 0; min-height: 44px; }
+.work {
+  min-height: 44px;
+  border-radius: 10px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.12);
+}
+.work b { font-size: 11px; line-height: 1.25; }
+.work small { font-size: 10px; color: var(--muted); }
+.work.doing { border-color: var(--pk); background: rgba(255,122,200,.12); }
+.work.doing small { color: var(--pk); }
+.work.done { border-color: rgba(94,224,160,.7); background: rgba(94,224,160,.12); }
+.work.done small { color: var(--ok); }
+.studio-side { display: grid; gap: 6px; }
+.schedule .kicker { margin-bottom: 4px; }
+.period {
+  display: grid;
+  grid-template-columns: 42px 1fr auto auto;
+  gap: 4px;
+  align-items: center;
+  font-size: 12px;
+  padding: 1px 0;
+}
+.period em { font-style: normal; color: var(--muted); font-variant-numeric: tabular-nums; }
+.period .period-mark { font-style: normal; color: var(--cy); font-size: 11px; min-width: 36px; text-align: right; }
+.period.past { opacity: .45; }
+.period.now { background: rgba(62,230,255,.12); border-radius: 6px; }
+.period.now .period-mark { color: var(--gd); }
+.schedule-note, .side-empty { margin: 4px 0 0; font-size: 10px; color: var(--muted); }
+.side-card.mini p { margin: 2px 0; font-size: 12px; line-height: 1.35; }
+.poem-bit span { color: var(--muted); }
+.pet-bit { display: flex; align-items: center; gap: 6px; }
+.pet-bit svg { width: 36px; height: 36px; flex: 0 0 auto; }
+.studio-go { margin: 0; min-height: 42px; }
 .board-parent {
-  min-height: 28px;
+  min-height: 22px;
   margin: 0;
   padding: 0;
   border: 0;
   background: none;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-@media (min-width: 860px) {
-  .board { grid-template-columns: 1.15fr .85fr; align-items: stretch; }
-  .board .hero, .board .metrics { grid-column: 1; }
-  .board .progress { grid-column: 2; grid-row: 1 / span 2; }
-  .board .poem { grid-column: 1; }
-  .board .board-go, .board-parent { grid-column: 1 / -1; }
+@media (min-width: 960px) {
+  .studio {
+    grid-template-columns: 230px minmax(0, 1fr) 300px;
+    grid-template-rows: 1fr auto;
+    align-items: stretch;
+    min-height: calc(100vh - 150px);
+  }
+  .studio-id { grid-column: 1; grid-row: 1; align-self: start; }
+  .wall { grid-column: 2; grid-row: 1 / span 2; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; align-self: stretch; }
+  .studio-side { grid-column: 3; grid-row: 1 / span 2; align-self: start; align-content: start; }
 }
 
 /* 点餐：分类栏 + 菜品卡 + 已点菜栏。不是商家官网。 */
@@ -659,6 +684,7 @@ window.addEventListener('unhandledrejection', function (ev) {
   window.showBootError(ev && ev.reason ? ev.reason : ev);
 });
 </script>
+
 
 
 
@@ -881,6 +907,63 @@ try {
   MY.BIRTHDAY = new Date(2016, 10, 3);
   MY.taskById = function (id) {
     return MY.ALL_TASKS.filter(function (t) { return t.id === id; })[0] || null;
+  };
+})(window.MY = window.MY || {});
+
+
+/* ===== data/timetable.js ===== */
+/* 今日课表。示例数据，改 MY.TIMETABLE.week 即可换成牧橒的正式课表。
+   week 的键是星期：1 周一 … 5 周五。0 周日、6 周六没有校内课。 */
+(function (MY) {
+  'use strict';
+
+  MY.TIMETABLE = {
+    placeholder: true,
+    note: '示例课表，待换成牧橒的正式课表',
+    periods: [
+      { n: 1, start: '08:20', end: '09:00' },
+      { n: 2, start: '09:10', end: '09:50' },
+      { n: 3, start: '10:10', end: '10:50' },
+      { n: 4, start: '11:00', end: '11:40' },
+      { n: 5, start: '14:00', end: '14:40' },
+      { n: 6, start: '14:50', end: '15:30' },
+      { n: 7, start: '16:40', end: '17:20', interest: true }
+    ],
+    week: {
+      1: ['语文', '数学', '英语', '体育', '语文', '阅读', '八极拳'],
+      2: ['数学', '语文', '英语', '语文', '数学', '体育', '八极拳'],
+      3: ['语文', '英语', '数学', '体育', '阅读', '英语', '思维课'],
+      4: ['数学', '语文', '英语', '阅读', '数学', '体育', '八极拳'],
+      5: ['语文', '数学', '英语', '体育', '语文', '阅读', '八极拳']
+    }
+  };
+
+  function minutes(hm) {
+    var p = String(hm).split(':');
+    return (+p[0]) * 60 + (+p[1] || 0);
+  }
+
+  MY.todayClasses = function (now) {
+    now = now || new Date();
+    var day = now.getDay();
+    var subjects = MY.TIMETABLE.week[day] || null;
+    var cur = now.getHours() * 60 + now.getMinutes();
+    var list = MY.TIMETABLE.periods.map(function (slot, i) {
+      var start = minutes(slot.start);
+      var end = minutes(slot.end);
+      var state = 'later';
+      if (cur >= end) state = 'past';
+      else if (cur >= start) state = 'now';
+      return {
+        n: slot.n,
+        start: slot.start,
+        end: slot.end,
+        interest: !!slot.interest,
+        subject: subjects ? subjects[i] : '',
+        state: state
+      };
+    });
+    return { day: day, inSchool: !!subjects, list: list, note: MY.TIMETABLE.note };
   };
 })(window.MY = window.MY || {});
 
@@ -2701,81 +2784,160 @@ try {
 
 
 /* ===== views/today.js ===== */
-/* 今日：一屏信息大屏。长诗在晨读看全文，这里只留一句。 */
+/* 今日：人生设计师的工作室控制台。作品墙是主体。 */
 (function (MY) {
   'use strict';
+
+  var WEEK = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 
   function dailyPoem() {
     var doy = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 864e5);
     return MY.POEMS[doy % MY.POEMS.length];
   }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function clockText(now) {
+    return pad(now.getHours()) + ':' + pad(now.getMinutes());
+  }
+  function dateText(now) {
+    return WEEK[now.getDay()] + ' ' + (now.getMonth() + 1) + '月' + now.getDate() + '日';
+  }
+  function reviewDue(now) {
+    return now.getDay() === 6 && now.getHours() >= 18;
+  }
+  function focusLine(now) {
+    var tasks = MY.taskMap();
+    var feast = MY.feastList();
+    var classes = MY.todayClasses(now);
+    var current = null;
+    classes.list.forEach(function (row) { if (row.state === 'now') current = row; });
+    if (current && current.subject) return '现在是第 ' + current.n + ' 节 · ' + current.subject;
+    var undone = feast.filter(function (id) { return !tasks[id]; });
+    if (undone.length) {
+      var t = MY.taskById(undone[0]);
+      return t ? '先完成「' + t.name + '」' : '先把进行中的作品做完';
+    }
+    var doneN = MY.ALL_TASKS.filter(function (t) { return !!tasks[t.id]; }).length;
+    if (!feast.length && !doneN) return '先决定今天要完成哪几件作品';
+    if (doneN >= MY.ALL_TASKS.length) return '今天的作品都完成了';
+    return '接着把剩下的作品做完';
+  }
+  function nextLabel() {
+    var tasks = MY.taskMap();
+    var feast = MY.feastList();
+    var doneN = MY.ALL_TASKS.filter(function (t) { return !!tasks[t.id]; }).length;
+    if (!feast.length && !doneN) return '开始大餐';
+    if (doneN >= MY.ALL_TASKS.length) return '今天完成了';
+    return '继续';
+  }
+  function paintLive(now) {
+    now = now || new Date();
+    var clock = document.getElementById('studio-clock');
+    var date = document.getElementById('studio-date');
+    if (clock) clock.textContent = clockText(now);
+    if (date) date.textContent = dateText(now);
+    var curMin = now.getHours() * 60 + now.getMinutes();
+    var rows = document.querySelectorAll('.period');
+    Array.prototype.forEach.call(rows, function (row) {
+      var start = +row.getAttribute('data-start');
+      var end = +row.getAttribute('data-end');
+      var state = curMin >= end ? 'past' : (curMin >= start ? 'now' : 'later');
+      row.classList.toggle('past', state === 'past');
+      row.classList.toggle('now', state === 'now');
+      var mark = row.querySelector('.period-mark');
+      if (mark) mark.textContent = state === 'now' ? '正在上' : (state === 'past' ? '已过' : '');
+    });
+  }
 
   MY.views = MY.views || {};
   MY.views.today = {
+    _clock: null,
+    mount: function () {
+      var self = this;
+      paintLive(new Date());
+      if (this._clock) return;
+      this._clock = setInterval(function () {
+        if (!document.getElementById('studio-clock')) { self.unmount(); return; }
+        paintLive(new Date());
+      }, 1000);
+    },
+    unmount: function () {
+      if (this._clock) clearInterval(this._clock);
+      this._clock = null;
+    },
     render: function () {
-      var sys = MY.state.system || {};
-      var ml = sys.mainline || {};
-      var yl = sys.yuanli || { life: 0, drive: 0, learn: 0 };
-      var age = MY.age();
-      var poem = dailyPoem();
+      var now = new Date();
       var tasks = MY.taskMap();
       var feast = MY.feastList();
-      var undone = feast.filter(function (id) { return !tasks[id]; });
-      var doneN = MY.ALL_TASKS.filter(function (t) { return !!tasks[t.id]; }).length;
-      var total = MY.ALL_TASKS.length;
-      var pct = total ? Math.round(doneN / total * 100) : 0;
+      var poem = dailyPoem();
       var gs = MY.gushi.stats();
-      var line = ((ml.declaration || MY.DECLARATION).split('\n')[0]) || '我是陈牧橒，人生设计师。';
-      var btn = !feast.length ? '开始大餐' : (undone.length ? '继续大餐 · 还剩 ' + undone.length + ' 道' : '看看今天的菜单');
-      var remain = !feast.length
-        ? '还没点菜 · 13 道都在菜单里'
-        : (!undone.length
-          ? '今天点过的菜都吃完了'
-          : '还剩 ' + undone.map(function (id) {
-            var t = MY.taskById(id);
-            return t ? t.dish : '';
-          }).filter(Boolean).join('、'));
-      var html = '<div class="board">';
-      html += '<section class="tile hero">';
-      html += '<div><div class="kicker">我的主线</div><h1>' + MY.esc(ml.title || '人生设计师') + '</h1>';
-      html += '<p>' + MY.esc(line) + '</p></div>';
-      html += '<div class="streak"><b>' + (MY.state.streak || 1) + '</b><span>连续打卡</span><small>' + age.years + '岁 · 新营四年级</small></div>';
+      var deckPoem = gs.deck && gs.deck.length ? MY.gushi.poem(gs.deck[0]) : poem;
+      var classes = MY.todayClasses(now);
+      var pet = MY.petById(MY.state.activePet);
+      var petLevel = pet ? MY.getPetData(pet.id).level : 1;
+      var yl = (MY.state.system && MY.state.system.yuanli) || { life: 0, drive: 0, learn: 0 };
+      var ylSum = (yl.life || 0) + (yl.drive || 0) + (yl.learn || 0);
+      var html = '<div class="studio">';
+
+      html += '<section class="studio-id">';
+      html += '<div class="studio-when"><b id="studio-clock">' + clockText(now) + '</b><span id="studio-date">' + dateText(now) + '</span></div>';
+      html += '<p class="studio-who">我是陈牧橒，人生设计师。</p>';
+      html += '<p class="studio-focus">' + MY.esc(focusLine(now)) + '</p>';
+      html += '<div class="studio-stats"><span><b>' + MY.coins() + '</b>阳光</span><span><b>' + (MY.state.streak || 1) + '</b>天连续</span></div>';
+      if (ylSum > 0) html += '<p class="studio-yl">元力 ' + ylSum + '</p>';
       html += '</section>';
-      html += '<section class="tile metrics">';
-      ['life', 'drive', 'learn'].forEach(function (k) {
-        html += '<div class="metric" style="--c:' + MY.YL_COLOR[k] + '"><b>' + (yl[k] || 0) + '</b><span>' + MY.YL_NAME[k] + '</span></div>';
-      });
-      html += '<div class="metric sun"><b>' + MY.coins() + '</b><span>阳光</span></div>';
-      html += '</section>';
-      html += '<section class="tile progress">';
-      html += '<div class="prog-top"><span>今日任务</span><b>' + doneN + ' / ' + total + '</b></div>';
-      html += '<div class="bar"><i style="width:' + pct + '%"></i></div>';
-      html += '<div class="dots">';
+
+      html += '<section class="wall" aria-label="今日作品墙">';
       MY.ALL_TASKS.forEach(function (t) {
-        var cls = tasks[t.id] ? 'done' : (feast.indexOf(t.id) >= 0 ? 'picked' : '');
-        html += '<i class="' + cls + '" title="' + MY.esc(t.dish) + '"></i>';
+        var done = !!tasks[t.id];
+        var doing = !done && feast.indexOf(t.id) >= 0;
+        var cls = done ? 'done' : (doing ? 'doing' : 'todo');
+        var label = done ? '已完成' : (doing ? '进行中' : '未点');
+        html += '<div class="work ' + cls + '"><b>' + MY.esc(t.name) + '</b><small>' + label + '</small></div>';
       });
-      html += '</div>';
-      html += '<p class="remain-line">' + MY.esc(remain) + '</p>';
-      html += '<p class="gushi-line">' + (gs.todayDone
-        ? '晨读已打卡 · 掌握 ' + gs.mastered + '/25'
-        : '晨读待背 ' + gs.deck.length + ' 首 · 掌握 ' + gs.mastered + '/25') +
-        ' <button type="button" class="text-btn" data-go="morning">去晨读</button></p>';
       html += '</section>';
-      html += '<section class="tile poem">';
-      html += '<div class="kicker">今日一句</div>';
-      html += '<p class="poem-line">' + MY.esc(poem.lines[0] || '') + (poem.lines[1] ? ' ' + MY.esc(poem.lines[1]) : '') + '</p>';
-      html += '<p class="fine">—— ' + MY.esc(poem.dynasty) + '·' + MY.esc(poem.author) + '《' + MY.esc(poem.title) + '》</p>';
+
+      html += '<aside class="studio-side">';
+      html += '<section class="side-card schedule">';
+      html += '<div class="kicker">' + WEEK[classes.day] + '课表</div>';
+      if (!classes.inSchool) {
+        html += '<p class="side-empty">今天没有校内课。</p>';
+      } else {
+        classes.list.forEach(function (row) {
+          var start = row.start.split(':');
+          var end = row.end.split(':');
+          var smin = (+start[0]) * 60 + (+start[1]);
+          var emin = (+end[0]) * 60 + (+end[1]);
+          html += '<div class="period ' + row.state + '" data-start="' + smin + '" data-end="' + emin + '">';
+          html += '<b>第' + row.n + '节</b><span>' + MY.esc(row.subject) + '</span>';
+          html += '<em>' + row.start + '–' + row.end + '</em>';
+          html += '<i class="period-mark">' + (row.state === 'now' ? '正在上' : (row.state === 'past' ? '已过' : '')) + '</i>';
+          html += '</div>';
+        });
+      }
+      html += '<p class="schedule-note">' + MY.esc(classes.note) + '</p>';
       html += '</section>';
-      html += '<button type="button" class="btn-main board-go" data-act="open-feast">' + btn + '</button>';
+      html += '<section class="side-card mini">';
+      html += '<p><b>晨读</b> ' + (gs.todayDone ? '今天已复习' : '今天先背《' + MY.esc(deckPoem ? deckPoem.title : '') + '》') + '</p>';
+      html += '<p class="poem-bit">' + MY.esc(poem.lines[0] || '') + ' <span>—— ' + MY.esc(poem.title) + '</span></p>';
+      html += '<p class="pet-bit">' + (pet ? MY.petSVG(pet.id, petLevel) : MY.petSVG('panda', 1));
+      html += '<span>' + (pet ? MY.esc(pet.name) + ' 在工作室' : '还没选工作室伙伴') + '</span></p>';
+      html += '</section>';
+      if (reviewDue(now)) {
+        html += '<section class="side-card review"><p>周六复盘到点了</p><button type="button" class="text-btn" data-act="open-review">去签字</button></section>';
+      }
+      html += '<button type="button" class="btn-main studio-go" data-act="open-feast">' + nextLabel() + '</button>';
       html += '<button type="button" class="board-parent" data-go="parent">家长看看</button>';
-      html += '</div>';
+      html += '</aside></div>';
       return html;
     },
     act: {
       'open-feast': function () {
         MY.views.feast.step = 'menu';
         MY.go('feast');
+      },
+      'open-review': function () {
+        if (MY.views.mainline) MY.views.mainline.tab = 'review';
+        MY.go('mainline');
       }
     }
   };
