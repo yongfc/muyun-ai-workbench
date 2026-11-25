@@ -47,6 +47,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
   margin: 0 auto;
   padding: 14px 16px calc(108px + env(safe-area-inset-bottom));
 }
+body[data-route="today"] .wrap,
+body[data-route="feast"] .wrap { width: min(1080px, 100%); }
+body[data-route="today"] .wrap { padding: 6px 10px calc(68px + env(safe-area-inset-bottom)); }
+body[data-route="today"] .top { margin-bottom: 6px; }
+body[data-route="today"] .brand-name { font-size: 18px; }
 body[data-route="feast"] .wrap,
 body[data-route="parent"] .wrap { padding-bottom: 28px; }
 .top {
@@ -441,10 +446,153 @@ a.btn-main { display: flex; align-items: center; justify-content: center; text-d
   .pomo-time { font-size: 60px; }
 }
 
+/* 今日信息大屏：只压缩这一页，整页仍可滚动 */
+.board { display: grid; gap: 6px; }
+.board .tile {
+  background: linear-gradient(180deg, rgba(20, 28, 62, 0.94), rgba(10, 14, 32, 0.92));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 8px 10px;
+}
+.board h1 { font-size: 22px; margin: 0; }
+.board .hero { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.board .hero p { margin: 2px 0 0; font-size: 13px; line-height: 1.35; }
+.board .streak { text-align: right; min-width: 92px; }
+.board .streak b { display: block; font-size: 28px; line-height: 1; color: var(--gd); }
+.board .streak span, .board .streak small { display: block; color: var(--muted); font-size: 11px; }
+.board .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 8px; }
+.board .metric { text-align: center; background: rgba(255,255,255,.04); border-radius: 10px; padding: 4px 2px; }
+.board .metric b { display: block; color: var(--c, var(--gd)); font-size: 16px; }
+.board .metric span { color: var(--muted); font-size: 11px; }
+.board .metric.sun b { color: var(--gd); }
+.board .prog-top, .board .gushi-line, .board .remain-line { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin: 0; font-size: 13px; }
+.board .remain-line { color: var(--gd); margin-top: 4px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display: block; }
+.board .gushi-line { color: var(--muted); margin-top: 2px; }
+.board .dots { display: flex; gap: 4px; margin: 6px 0 2px; }
+.board .dots i { flex: 1; height: 8px; border-radius: 99px; background: rgba(62,230,255,.28); }
+.board .dots i.picked { background: var(--pk); }
+.board .dots i.done { background: var(--ok); }
+.board .poem-line {
+  font-size: 15px;
+  line-height: 1.35;
+  margin: 2px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.board .fine { margin: 0; }
+.board .board-go { margin-top: 0; min-height: 44px; }
+.board-parent {
+  min-height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (min-width: 860px) {
+  .board { grid-template-columns: 1.15fr .85fr; align-items: stretch; }
+  .board .hero, .board .metrics { grid-column: 1; }
+  .board .progress { grid-column: 2; grid-row: 1 / span 2; }
+  .board .poem { grid-column: 1; }
+  .board .board-go, .board-parent { grid-column: 1 / -1; }
+}
+
+/* 点餐：分类栏 + 菜品卡 + 已点菜栏。不是商家官网。 */
+.order-layout { display: flex; gap: 8px; align-items: flex-start; }
+.order-nav {
+  position: sticky;
+  top: 6px;
+  width: 68px;
+  flex: 0 0 68px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.order-nav button {
+  min-height: 52px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,122,200,.35);
+  background: rgba(255,122,200,.08);
+  color: #ffd0ea;
+  font-size: 12px;
+  font-weight: 800;
+}
+.order-nav button span { display: block; font-size: 16px; }
+.order-list { flex: 1; min-width: 0; }
+.order-sec { margin: 4px 0 6px; font-size: 14px; color: var(--gd); scroll-margin-top: 8px; scroll-margin-bottom: 140px; }
+.order-grid { display: grid; gap: 8px; }
+.menu-card {
+  width: 100%;
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+}
+.menu-card.on { border-color: var(--pk); box-shadow: inset 0 0 0 1px var(--pk); }
+.menu-card.done { opacity: .5; }
+.menu-ico { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; }
+.menu-main { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.menu-main b { font-size: 16px; }
+.menu-task { color: var(--cy); font-size: 12px; }
+.menu-meta { color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.menu-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.menu-price b { color: var(--gd); font-size: 18px; line-height: 1; }
+.menu-price small { display: block; color: var(--gd); font-size: 10px; text-align: right; }
+.menu-qty {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 99px;
+  display: grid;
+  place-items: center;
+  background: rgba(62,230,255,.16);
+  color: var(--cy);
+  font-weight: 800;
+}
+.menu-card.on .menu-qty { background: var(--pk); color: #1a0a14; }
+.order-screen { padding-bottom: 118px; }
+.cart-bar {
+  position: fixed;
+  z-index: 25;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(1080px, 100%);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  background: rgba(8, 10, 22, .96);
+  border-top: 1px solid rgba(255,122,200,.45);
+}
+.cart-info { flex: 1; min-width: 0; }
+.cart-info b { display: block; }
+.cart-info span { display: block; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cart-info em { color: var(--gd); font-style: normal; font-size: 12px; }
+.cart-go { width: auto; min-width: 132px; margin: 0; min-height: 44px; flex: 0 0 auto; }
+@media (max-width: 560px) {
+  .cart-bar { flex-wrap: wrap; }
+  .cart-go { width: 100%; }
+}
+@media (min-width: 860px) {
+  .order-grid { grid-template-columns: 1fr 1fr; }
+  .order-nav { width: 88px; flex-basis: 88px; }
+}
+
 </style>
 </head>
 <body>
-<p id="plain-banner" style="position:relative;z-index:100000;display:block;box-sizing:border-box;margin:0;padding:12px 16px;color:#1b1408 !important;background:#fff4d6 !important;font:16px/1.55 'Microsoft YaHei',sans-serif;color-scheme:light;">牧橒成长工作台 · 陈牧橒的今日。这行字不靠页面样式，双击打开就能看见。若下面是空的，到文件属性里勾选「解除锁定」后再打开。</p>
+<p id="plain-banner" style="position:relative;z-index:100000;display:block;box-sizing:border-box;margin:0;padding:8px 12px;color:#1b1408 !important;background:#fff4d6 !important;font:13px/1.35 'Microsoft YaHei',sans-serif;color-scheme:light;">牧橒成长工作台已打开。这行字不靠页面样式。若下面是空的，请勾选「解除锁定」。</p>
 <div class="wrap">
   <div id="boot-error" class="card boot-error" hidden></div>
   <header class="top" id="top">
@@ -2553,7 +2701,7 @@ try {
 
 
 /* ===== views/today.js ===== */
-/* 今日：主线、连续打卡、还剩什么、一句诗、进入大餐。 */
+/* 今日：一屏信息大屏。长诗在晨读看全文，这里只留一句。 */
 (function (MY) {
   'use strict';
 
@@ -2562,70 +2710,66 @@ try {
     return MY.POEMS[doy % MY.POEMS.length];
   }
 
-  function remainHtml() {
-    var feast = MY.feastList();
-    var tasks = MY.taskMap();
-    var undone = feast.filter(function (id) { return !tasks[id]; });
-    var doneN = MY.ALL_TASKS.filter(function (t) { return !!tasks[t.id]; }).length;
-    var html = '<div class="card">';
-    html += '<div class="kicker">今日还剩</div>';
-    if (!feast.length) {
-      html += '<p class="lead">还没点今日大餐。十三道菜都在菜单里，想吃哪道点哪道。</p>';
-    } else if (!undone.length) {
-      html += '<p class="lead">今天点过的菜都吃完了。阳光已经记在账上。</p>';
-    } else {
-      html += '<ul class="remain">';
-      undone.forEach(function (id) {
-        var t = MY.taskById(id);
-        if (!t) return;
-        html += '<li><b>' + MY.esc(t.dish) + '</b><span>' + MY.esc(t.name) + ' · +' + t.reward + '阳光</span></li>';
-      });
-      html += '</ul>';
-    }
-    html += '<p class="fine">十三道里完成了 ' + doneN + ' 道</p>';
-    var gs = MY.gushi.stats();
-    html += '<p class="fine">' + (gs.todayDone
-      ? '晨读今天已经打过卡'
-      : '晨读还差今天这一组，共 ' + gs.deck.length + ' 首') +
-      ' · <button type="button" class="text-btn" data-go="morning">去晨读</button></p>';
-    html += '</div>';
-    return html;
-  }
-
   MY.views = MY.views || {};
   MY.views.today = {
     render: function () {
-      var sys = MY.state.system;
+      var sys = MY.state.system || {};
       var ml = sys.mainline || {};
       var yl = sys.yuanli || { life: 0, drive: 0, learn: 0 };
       var age = MY.age();
       var poem = dailyPoem();
+      var tasks = MY.taskMap();
       var feast = MY.feastList();
-      var undone = feast.filter(function (id) { return !MY.taskMap()[id]; });
-      var btn = !feast.length ? '开始大餐' : (undone.length ? '继续大餐' : '看看今天的菜单');
-      var html = '';
-      html += '<section class="card mainline-card">';
-      html += '<div class="kicker">我的主线</div>';
-      html += '<h1>' + MY.esc(ml.title || '人生设计师') + '</h1>';
-      html += '<p class="decl">' + MY.nl((ml.declaration || MY.DECLARATION).split('\n')[0]) + '</p>';
-      html += '<div class="yl-row">';
+      var undone = feast.filter(function (id) { return !tasks[id]; });
+      var doneN = MY.ALL_TASKS.filter(function (t) { return !!tasks[t.id]; }).length;
+      var total = MY.ALL_TASKS.length;
+      var pct = total ? Math.round(doneN / total * 100) : 0;
+      var gs = MY.gushi.stats();
+      var line = ((ml.declaration || MY.DECLARATION).split('\n')[0]) || '我是陈牧橒，人生设计师。';
+      var btn = !feast.length ? '开始大餐' : (undone.length ? '继续大餐 · 还剩 ' + undone.length + ' 道' : '看看今天的菜单');
+      var remain = !feast.length
+        ? '还没点菜 · 13 道都在菜单里'
+        : (!undone.length
+          ? '今天点过的菜都吃完了'
+          : '还剩 ' + undone.map(function (id) {
+            var t = MY.taskById(id);
+            return t ? t.dish : '';
+          }).filter(Boolean).join('、'));
+      var html = '<div class="board">';
+      html += '<section class="tile hero">';
+      html += '<div><div class="kicker">我的主线</div><h1>' + MY.esc(ml.title || '人生设计师') + '</h1>';
+      html += '<p>' + MY.esc(line) + '</p></div>';
+      html += '<div class="streak"><b>' + (MY.state.streak || 1) + '</b><span>连续打卡</span><small>' + age.years + '岁 · 新营四年级</small></div>';
+      html += '</section>';
+      html += '<section class="tile metrics">';
       ['life', 'drive', 'learn'].forEach(function (k) {
-        html += '<div class="yl-pill" style="--c:' + MY.YL_COLOR[k] + '"><b>' + (yl[k] || 0) + '</b><span>' + MY.YL_NAME[k] + '</span></div>';
+        html += '<div class="metric" style="--c:' + MY.YL_COLOR[k] + '"><b>' + (yl[k] || 0) + '</b><span>' + MY.YL_NAME[k] + '</span></div>';
+      });
+      html += '<div class="metric sun"><b>' + MY.coins() + '</b><span>阳光</span></div>';
+      html += '</section>';
+      html += '<section class="tile progress">';
+      html += '<div class="prog-top"><span>今日任务</span><b>' + doneN + ' / ' + total + '</b></div>';
+      html += '<div class="bar"><i style="width:' + pct + '%"></i></div>';
+      html += '<div class="dots">';
+      MY.ALL_TASKS.forEach(function (t) {
+        var cls = tasks[t.id] ? 'done' : (feast.indexOf(t.id) >= 0 ? 'picked' : '');
+        html += '<i class="' + cls + '" title="' + MY.esc(t.dish) + '"></i>';
       });
       html += '</div>';
-      html += '<p class="fine">连续打卡 <strong>' + (MY.state.streak || 1) + '</strong> 天 · ' + age.years + '岁 · 日照新营小学四年级</p>';
+      html += '<p class="remain-line">' + MY.esc(remain) + '</p>';
+      html += '<p class="gushi-line">' + (gs.todayDone
+        ? '晨读已打卡 · 掌握 ' + gs.mastered + '/25'
+        : '晨读待背 ' + gs.deck.length + ' 首 · 掌握 ' + gs.mastered + '/25') +
+        ' <button type="button" class="text-btn" data-go="morning">去晨读</button></p>';
       html += '</section>';
-      html += '<section class="card streak-card">';
-      html += '<div class="streak-num">' + (MY.state.streak || 1) + '<small>天</small></div>';
-      html += '<div><div class="kicker">连续打卡</div><p class="lead">一天接一天，元力就在这里。</p></div>';
-      html += '</section>';
-      html += remainHtml();
-      html += '<details class="card quote"><summary>今日一句</summary>';
-      html += '<p class="poem-line">' + MY.esc(poem.lines[0] || '') + '<br>' + MY.esc(poem.lines[1] || '') + '</p>';
+      html += '<section class="tile poem">';
+      html += '<div class="kicker">今日一句</div>';
+      html += '<p class="poem-line">' + MY.esc(poem.lines[0] || '') + (poem.lines[1] ? ' ' + MY.esc(poem.lines[1]) : '') + '</p>';
       html += '<p class="fine">—— ' + MY.esc(poem.dynasty) + '·' + MY.esc(poem.author) + '《' + MY.esc(poem.title) + '》</p>';
-      html += '</details>';
-      html += '<button type="button" class="btn-main" data-act="open-feast">' + btn + '</button>';
-      html += '<button type="button" class="link-quiet" data-go="parent">家长看看</button>';
+      html += '</section>';
+      html += '<button type="button" class="btn-main board-go" data-act="open-feast">' + btn + '</button>';
+      html += '<button type="button" class="board-parent" data-go="parent">家长看看</button>';
+      html += '</div>';
       return html;
     },
     act: {
@@ -2716,7 +2860,8 @@ try {
     },
 
     render: function () {
-      var html = '<div class="flow-top"><button type="button" class="back" data-act="feast-exit">← 回到今日</button><div class="flow-title">今日大餐</div></div>';
+      var title = this.step === 'confirm' ? '开工确认' : (this.step === 'work' ? '番茄钟' : (this.step === 'done' ? '大餐完成' : '点餐'));
+      var html = '<div class="flow-top"><button type="button" class="back" data-act="feast-exit">← 回到今日</button><div class="flow-title">' + title + '</div></div>';
       if (this.step === 'confirm') html += this.confirmHtml();
       else if (this.step === 'work') html += this.workHtml();
       else if (this.step === 'done') html += this.doneHtml();
@@ -2727,33 +2872,44 @@ try {
     menuHtml: function () {
       var tasks = MY.taskMap();
       var feast = MY.feastList();
-      var html = '<p class="lead" id="feastSummary">';
-      if (!feast.length) html += '还没点菜，点喜欢的菜加入今日大餐~';
-      else {
-        html += '今日大餐：' + feast.map(function (id) {
-          var t = MY.taskById(id);
-          return t ? MY.esc(t.dish) : '';
-        }).filter(Boolean).join('、');
-      }
-      html += '</p>';
+      var shortName = { must: '招牌', veg: '时蔬', snack: '小食' };
+      var html = '<div class="order-screen"><div class="order-layout"><nav class="order-nav">';
       MY.TASK_GROUPS.forEach(function (g) {
-        html += '<h2 class="sec">' + MY.GROUP_TITLES[g.key] + '</h2>';
+        html += '<button type="button" data-act="jump-group" data-group="' + g.key + '"><span>' + g.icon + '</span>' + (shortName[g.key] || '') + '</button>';
+      });
+      html += '</nav><div class="order-list">';
+      MY.TASK_GROUPS.forEach(function (g) {
+        html += '<h2 class="order-sec" id="group-' + g.key + '">' + MY.GROUP_TITLES[g.key] + '</h2><div class="order-grid">';
         g.tasks.forEach(function (t) {
           var done = !!tasks[t.id];
           var on = !done && feast.indexOf(t.id) >= 0;
-          html += '<button type="button" class="dish' + (done ? ' done' : '') + (on ? ' on' : '') + '" data-act="toggle-dish" data-id="' + t.id + '">';
-          html += '<span class="dish-ico" style="background:' + g.bg + '">' + g.icon + '</span>';
-          html += '<span class="dish-body"><b>' + MY.esc(t.name) + '</b><em>🥘 ' + MY.esc(t.dish) + '</em><small>' + MY.esc(t.meta) + ' · +' + t.reward + '阳光</small></span>';
-          html += '<span class="dish-mark">' + (done ? '✓' : (on ? '选' : '')) + '</span></button>';
+          html += '<button type="button" class="menu-card' + (done ? ' done' : '') + (on ? ' on' : '') + '" data-act="toggle-dish" data-id="' + t.id + '">';
+          html += '<span class="menu-ico" style="background:' + g.bg + '">' + g.icon + '</span>';
+          html += '<span class="menu-main"><b>' + MY.esc(t.dish) + '</b><span class="menu-task">' + MY.esc(t.name) + '</span><span class="menu-meta">' + MY.esc(t.meta) + '</span></span>';
+          html += '<span class="menu-side"><span class="menu-price"><b>' + t.reward + '</b><small>阳光</small></span>';
+          html += '<span class="menu-qty">' + (done ? '吃完' : (on ? '1' : '+')) + '</span></span></button>';
         });
+        html += '</div>';
       });
-      var undone = feast.filter(function (id) { return !tasks[id]; });
+      html += '</div></div>';
+      var picked = feast.filter(function (id) { return !tasks[id]; });
+      var sum = 0;
+      var names = [];
+      picked.forEach(function (id) {
+        var t = MY.taskById(id);
+        if (!t) return;
+        sum += t.reward;
+        names.push(t.dish);
+      });
       var label = '先点几道菜';
       var disabled = !feast.length;
-      if (feast.length && !MY.state.confirmed) label = '点好了，去确认';
-      else if (undone.length) label = '开始做菜（还剩 ' + undone.length + ' 道）';
+      if (feast.length && !MY.state.confirmed) label = '确认下单';
+      else if (picked.length) label = '开始做菜';
       else if (feast.length) label = '今天的菜吃完啦';
-      html += '<button type="button" class="btn-main" data-act="feast-next"' + (disabled ? ' disabled' : '') + '>' + label + '</button>';
+      html += '<div class="cart-bar"><div class="cart-info"><b>已点 ' + picked.length + ' 道</b>';
+      html += '<span>' + (names.length ? MY.esc(names.join('、')) : '还没点菜，点喜欢的菜加入今日大餐~') + '</span>';
+      html += '<em>阳光 +' + sum + '</em></div>';
+      html += '<button type="button" class="btn-main cart-go" data-act="feast-next"' + (disabled ? ' disabled' : '') + '>' + label + '</button></div></div>';
       return html;
     },
 
@@ -2886,6 +3042,10 @@ try {
         view.stop();
         view.step = 'menu';
         MY.render();
+      },
+      'jump-group': function (el) {
+        var node = document.getElementById('group-' + el.dataset.group);
+        if (node) node.scrollIntoView({ block: 'start' });
       },
       'go-read': function (el) {
         var id = el.dataset.id || nextDish();

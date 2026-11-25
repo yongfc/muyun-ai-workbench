@@ -1,4 +1,4 @@
-/* 今日：主线、连续打卡、还剩什么、一句诗、进入大餐。 */
+/* 今日：一屏信息大屏。长诗在晨读看全文，这里只留一句。 */
 (function (MY) {
   'use strict';
 
@@ -7,70 +7,66 @@
     return MY.POEMS[doy % MY.POEMS.length];
   }
 
-  function remainHtml() {
-    var feast = MY.feastList();
-    var tasks = MY.taskMap();
-    var undone = feast.filter(function (id) { return !tasks[id]; });
-    var doneN = MY.ALL_TASKS.filter(function (t) { return !!tasks[t.id]; }).length;
-    var html = '<div class="card">';
-    html += '<div class="kicker">今日还剩</div>';
-    if (!feast.length) {
-      html += '<p class="lead">还没点今日大餐。十三道菜都在菜单里，想吃哪道点哪道。</p>';
-    } else if (!undone.length) {
-      html += '<p class="lead">今天点过的菜都吃完了。阳光已经记在账上。</p>';
-    } else {
-      html += '<ul class="remain">';
-      undone.forEach(function (id) {
-        var t = MY.taskById(id);
-        if (!t) return;
-        html += '<li><b>' + MY.esc(t.dish) + '</b><span>' + MY.esc(t.name) + ' · +' + t.reward + '阳光</span></li>';
-      });
-      html += '</ul>';
-    }
-    html += '<p class="fine">十三道里完成了 ' + doneN + ' 道</p>';
-    var gs = MY.gushi.stats();
-    html += '<p class="fine">' + (gs.todayDone
-      ? '晨读今天已经打过卡'
-      : '晨读还差今天这一组，共 ' + gs.deck.length + ' 首') +
-      ' · <button type="button" class="text-btn" data-go="morning">去晨读</button></p>';
-    html += '</div>';
-    return html;
-  }
-
   MY.views = MY.views || {};
   MY.views.today = {
     render: function () {
-      var sys = MY.state.system;
+      var sys = MY.state.system || {};
       var ml = sys.mainline || {};
       var yl = sys.yuanli || { life: 0, drive: 0, learn: 0 };
       var age = MY.age();
       var poem = dailyPoem();
+      var tasks = MY.taskMap();
       var feast = MY.feastList();
-      var undone = feast.filter(function (id) { return !MY.taskMap()[id]; });
-      var btn = !feast.length ? '开始大餐' : (undone.length ? '继续大餐' : '看看今天的菜单');
-      var html = '';
-      html += '<section class="card mainline-card">';
-      html += '<div class="kicker">我的主线</div>';
-      html += '<h1>' + MY.esc(ml.title || '人生设计师') + '</h1>';
-      html += '<p class="decl">' + MY.nl((ml.declaration || MY.DECLARATION).split('\n')[0]) + '</p>';
-      html += '<div class="yl-row">';
+      var undone = feast.filter(function (id) { return !tasks[id]; });
+      var doneN = MY.ALL_TASKS.filter(function (t) { return !!tasks[t.id]; }).length;
+      var total = MY.ALL_TASKS.length;
+      var pct = total ? Math.round(doneN / total * 100) : 0;
+      var gs = MY.gushi.stats();
+      var line = ((ml.declaration || MY.DECLARATION).split('\n')[0]) || '我是陈牧橒，人生设计师。';
+      var btn = !feast.length ? '开始大餐' : (undone.length ? '继续大餐 · 还剩 ' + undone.length + ' 道' : '看看今天的菜单');
+      var remain = !feast.length
+        ? '还没点菜 · 13 道都在菜单里'
+        : (!undone.length
+          ? '今天点过的菜都吃完了'
+          : '还剩 ' + undone.map(function (id) {
+            var t = MY.taskById(id);
+            return t ? t.dish : '';
+          }).filter(Boolean).join('、'));
+      var html = '<div class="board">';
+      html += '<section class="tile hero">';
+      html += '<div><div class="kicker">我的主线</div><h1>' + MY.esc(ml.title || '人生设计师') + '</h1>';
+      html += '<p>' + MY.esc(line) + '</p></div>';
+      html += '<div class="streak"><b>' + (MY.state.streak || 1) + '</b><span>连续打卡</span><small>' + age.years + '岁 · 新营四年级</small></div>';
+      html += '</section>';
+      html += '<section class="tile metrics">';
       ['life', 'drive', 'learn'].forEach(function (k) {
-        html += '<div class="yl-pill" style="--c:' + MY.YL_COLOR[k] + '"><b>' + (yl[k] || 0) + '</b><span>' + MY.YL_NAME[k] + '</span></div>';
+        html += '<div class="metric" style="--c:' + MY.YL_COLOR[k] + '"><b>' + (yl[k] || 0) + '</b><span>' + MY.YL_NAME[k] + '</span></div>';
+      });
+      html += '<div class="metric sun"><b>' + MY.coins() + '</b><span>阳光</span></div>';
+      html += '</section>';
+      html += '<section class="tile progress">';
+      html += '<div class="prog-top"><span>今日任务</span><b>' + doneN + ' / ' + total + '</b></div>';
+      html += '<div class="bar"><i style="width:' + pct + '%"></i></div>';
+      html += '<div class="dots">';
+      MY.ALL_TASKS.forEach(function (t) {
+        var cls = tasks[t.id] ? 'done' : (feast.indexOf(t.id) >= 0 ? 'picked' : '');
+        html += '<i class="' + cls + '" title="' + MY.esc(t.dish) + '"></i>';
       });
       html += '</div>';
-      html += '<p class="fine">连续打卡 <strong>' + (MY.state.streak || 1) + '</strong> 天 · ' + age.years + '岁 · 日照新营小学四年级</p>';
+      html += '<p class="remain-line">' + MY.esc(remain) + '</p>';
+      html += '<p class="gushi-line">' + (gs.todayDone
+        ? '晨读已打卡 · 掌握 ' + gs.mastered + '/25'
+        : '晨读待背 ' + gs.deck.length + ' 首 · 掌握 ' + gs.mastered + '/25') +
+        ' <button type="button" class="text-btn" data-go="morning">去晨读</button></p>';
       html += '</section>';
-      html += '<section class="card streak-card">';
-      html += '<div class="streak-num">' + (MY.state.streak || 1) + '<small>天</small></div>';
-      html += '<div><div class="kicker">连续打卡</div><p class="lead">一天接一天，元力就在这里。</p></div>';
-      html += '</section>';
-      html += remainHtml();
-      html += '<details class="card quote"><summary>今日一句</summary>';
-      html += '<p class="poem-line">' + MY.esc(poem.lines[0] || '') + '<br>' + MY.esc(poem.lines[1] || '') + '</p>';
+      html += '<section class="tile poem">';
+      html += '<div class="kicker">今日一句</div>';
+      html += '<p class="poem-line">' + MY.esc(poem.lines[0] || '') + (poem.lines[1] ? ' ' + MY.esc(poem.lines[1]) : '') + '</p>';
       html += '<p class="fine">—— ' + MY.esc(poem.dynasty) + '·' + MY.esc(poem.author) + '《' + MY.esc(poem.title) + '》</p>';
-      html += '</details>';
-      html += '<button type="button" class="btn-main" data-act="open-feast">' + btn + '</button>';
-      html += '<button type="button" class="link-quiet" data-go="parent">家长看看</button>';
+      html += '</section>';
+      html += '<button type="button" class="btn-main board-go" data-act="open-feast">' + btn + '</button>';
+      html += '<button type="button" class="board-parent" data-go="parent">家长看看</button>';
+      html += '</div>';
       return html;
     },
     act: {

@@ -75,7 +75,8 @@
     },
 
     render: function () {
-      var html = '<div class="flow-top"><button type="button" class="back" data-act="feast-exit">← 回到今日</button><div class="flow-title">今日大餐</div></div>';
+      var title = this.step === 'confirm' ? '开工确认' : (this.step === 'work' ? '番茄钟' : (this.step === 'done' ? '大餐完成' : '点餐'));
+      var html = '<div class="flow-top"><button type="button" class="back" data-act="feast-exit">← 回到今日</button><div class="flow-title">' + title + '</div></div>';
       if (this.step === 'confirm') html += this.confirmHtml();
       else if (this.step === 'work') html += this.workHtml();
       else if (this.step === 'done') html += this.doneHtml();
@@ -86,33 +87,44 @@
     menuHtml: function () {
       var tasks = MY.taskMap();
       var feast = MY.feastList();
-      var html = '<p class="lead" id="feastSummary">';
-      if (!feast.length) html += '还没点菜，点喜欢的菜加入今日大餐~';
-      else {
-        html += '今日大餐：' + feast.map(function (id) {
-          var t = MY.taskById(id);
-          return t ? MY.esc(t.dish) : '';
-        }).filter(Boolean).join('、');
-      }
-      html += '</p>';
+      var shortName = { must: '招牌', veg: '时蔬', snack: '小食' };
+      var html = '<div class="order-screen"><div class="order-layout"><nav class="order-nav">';
       MY.TASK_GROUPS.forEach(function (g) {
-        html += '<h2 class="sec">' + MY.GROUP_TITLES[g.key] + '</h2>';
+        html += '<button type="button" data-act="jump-group" data-group="' + g.key + '"><span>' + g.icon + '</span>' + (shortName[g.key] || '') + '</button>';
+      });
+      html += '</nav><div class="order-list">';
+      MY.TASK_GROUPS.forEach(function (g) {
+        html += '<h2 class="order-sec" id="group-' + g.key + '">' + MY.GROUP_TITLES[g.key] + '</h2><div class="order-grid">';
         g.tasks.forEach(function (t) {
           var done = !!tasks[t.id];
           var on = !done && feast.indexOf(t.id) >= 0;
-          html += '<button type="button" class="dish' + (done ? ' done' : '') + (on ? ' on' : '') + '" data-act="toggle-dish" data-id="' + t.id + '">';
-          html += '<span class="dish-ico" style="background:' + g.bg + '">' + g.icon + '</span>';
-          html += '<span class="dish-body"><b>' + MY.esc(t.name) + '</b><em>🥘 ' + MY.esc(t.dish) + '</em><small>' + MY.esc(t.meta) + ' · +' + t.reward + '阳光</small></span>';
-          html += '<span class="dish-mark">' + (done ? '✓' : (on ? '选' : '')) + '</span></button>';
+          html += '<button type="button" class="menu-card' + (done ? ' done' : '') + (on ? ' on' : '') + '" data-act="toggle-dish" data-id="' + t.id + '">';
+          html += '<span class="menu-ico" style="background:' + g.bg + '">' + g.icon + '</span>';
+          html += '<span class="menu-main"><b>' + MY.esc(t.dish) + '</b><span class="menu-task">' + MY.esc(t.name) + '</span><span class="menu-meta">' + MY.esc(t.meta) + '</span></span>';
+          html += '<span class="menu-side"><span class="menu-price"><b>' + t.reward + '</b><small>阳光</small></span>';
+          html += '<span class="menu-qty">' + (done ? '吃完' : (on ? '1' : '+')) + '</span></span></button>';
         });
+        html += '</div>';
       });
-      var undone = feast.filter(function (id) { return !tasks[id]; });
+      html += '</div></div>';
+      var picked = feast.filter(function (id) { return !tasks[id]; });
+      var sum = 0;
+      var names = [];
+      picked.forEach(function (id) {
+        var t = MY.taskById(id);
+        if (!t) return;
+        sum += t.reward;
+        names.push(t.dish);
+      });
       var label = '先点几道菜';
       var disabled = !feast.length;
-      if (feast.length && !MY.state.confirmed) label = '点好了，去确认';
-      else if (undone.length) label = '开始做菜（还剩 ' + undone.length + ' 道）';
+      if (feast.length && !MY.state.confirmed) label = '确认下单';
+      else if (picked.length) label = '开始做菜';
       else if (feast.length) label = '今天的菜吃完啦';
-      html += '<button type="button" class="btn-main" data-act="feast-next"' + (disabled ? ' disabled' : '') + '>' + label + '</button>';
+      html += '<div class="cart-bar"><div class="cart-info"><b>已点 ' + picked.length + ' 道</b>';
+      html += '<span>' + (names.length ? MY.esc(names.join('、')) : '还没点菜，点喜欢的菜加入今日大餐~') + '</span>';
+      html += '<em>阳光 +' + sum + '</em></div>';
+      html += '<button type="button" class="btn-main cart-go" data-act="feast-next"' + (disabled ? ' disabled' : '') + '>' + label + '</button></div></div>';
       return html;
     },
 
@@ -245,6 +257,10 @@
         view.stop();
         view.step = 'menu';
         MY.render();
+      },
+      'jump-group': function (el) {
+        var node = document.getElementById('group-' + el.dataset.group);
+        if (node) node.scrollIntoView({ block: 'start' });
       },
       'go-read': function (el) {
         var id = el.dataset.id || nextDish();
