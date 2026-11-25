@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>牧橒成长工作台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23070914'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%23ffd54f'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top" id="top"></header>
+  <main id="view"></main>
+</div>
+<nav class="tabbar" id="tabbar" aria-label="孩子端">
+  <button type="button" data-go="today"><span aria-hidden="true">☀️</span>今日</button>
+  <button type="button" data-go="morning"><span aria-hidden="true">📖</span>晨读</button>
+  <button type="button" data-go="park"><span aria-hidden="true">🐾</span>乐园</button>
+  <button type="button" data-go="mainline"><span aria-hidden="true">🧭</span>主线</button>
+</nav>
+<div class="toast" id="toast" role="status"></div>
+<script src="data/tasks.js"></script>
+<script src="data/poems.js"></script>
+<script src="data/pets.js"></script>
+<script src="data/life.js"></script>
+<script src="store.js"></script>
+<script src="gushi.js"></script>
+<script src="views/today.js"></script>
+<script src="views/feast.js"></script>
+<script src="views/morning.js"></script>
+<script src="views/park.js"></script>
+<script src="views/mainline.js"></script>
+<script src="views/parent.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
